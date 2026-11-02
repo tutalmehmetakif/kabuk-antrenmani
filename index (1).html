@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kabuk Antrenmanı</title>
+<meta name="description" content="Sistem Programlama Quiz 1 için sınırsız, otomatik üretilen shell soruları ve açıklamalı çözümler.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Düzen: tek sütun "sınav kağıdı" — üstte mod seçimi, ortada soru kağıdı, cevaplar fosforlu kalem + kırmızı kalemle işaretlenir */
+:root {
+  --paper: #f5f6f8;      /* sayfa zemini: hafif soğuk gri */
+  --sheet: #ffffff;      /* soru kağıdı */
+  --ink: #1b2130;        /* metin */
+  --ink-2: #545c6e;      /* ikincil metin */
+  --rule: #dfe3ea;       /* çizgiler */
+  --term: #eef1f5;       /* terminal çıktısı zemini */
+  --accent: #2346c4;     /* mürekkep mavisi: düğmeler, seçim */
+  --accent-ink: #ffffff;
+  --hl: #ffe94a;         /* fosforlu kalem */
+  --hl-ink: #1b2130;
+  --pen: #c9233a;        /* kırmızı kalem */
+  --ok: #157a4a;
+  --ok-bg: #e5f4ec;
+  --bad-bg: #fbe9ec;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --hand: "Caveat", "Comic Sans MS", cursive;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #10131a; --sheet: #181c25; --ink: #e6e9f0; --ink-2: #a3abbb; --rule: #2a303c; --term: #11151d;
+  --accent: #7d97ff; --accent-ink: #0e1220; --hl: #e3c62a; --hl-ink: #12151c; --pen: #ff6f80; --ok: #5fd39a; --ok-bg: #16312a; --bad-bg: #3a1a22; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #10131a; --sheet: #181c25; --ink: #e6e9f0; --ink-2: #a3abbb; --rule: #2a303c; --term: #11151d;
+  --accent: #7d97ff; --accent-ink: #0e1220; --hl: #e3c62a; --hl-ink: #12151c; --pen: #ff6f80; --ok: #5fd39a; --ok-bg: #16312a; --bad-bg: #3a1a22; color-scheme: dark; }
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--body); font-size: 16px; line-height: 1.5; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 18px; }
+code { font-family: var(--mono); font-size: .86em; background: var(--term); padding: .08em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* üst bölüm */
+header.top { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; justify-content: space-between; }
+.brand { display: grid; gap: 2px; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 6vw, 44px); line-height: 1; margin: 0; letter-spacing: -.02em; text-wrap: balance; }
+h1 .mark { background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 90%, transparent 90%); padding: 0 .08em; color: inherit; }
+.modes { display: inline-flex; background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 4px; gap: 4px; }
+.modes button { border: 0; background: transparent; color: var(--ink-2); padding: 7px 16px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* konu çipleri + istatistik */
+.panel { display: grid; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 4px 11px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.chip .pct { font-family: var(--mono); font-size: 11px; opacity: .75; }
+.chips-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--ink-2); }
+.stats b { color: var(--ink); font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* soru kağıdı */
+.sheet { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: clamp(16px, 4vw, 30px); display: grid; gap: 16px; min-width: 0; box-shadow: 0 1px 0 var(--rule); }
+.qmeta { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; font-size: 14px; color: var(--ink-2); }
+.qno { font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); }
+.pts { font-style: italic; }
+.tag { font-family: var(--mono); font-size: 12px; border: 1px solid var(--rule); border-radius: 4px; padding: 1px 7px; }
+.prompt { font-size: 17px; min-width: 0; }
+.prompt b { font-weight: 700; }
+pre.cmd { font-family: var(--mono); font-size: 13.5px; background: var(--term); border-radius: 4px; padding: 10px 12px; margin: 10px 0 0; overflow-x: auto; white-space: pre; }
+
+/* terminal çıktıları (ilk sayfa) */
+.ctx { display: grid; gap: 4px; min-width: 0; }
+.ctx-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.ctx-title { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.ruler-toggle { font-size: 12px; }
+.term { font-family: var(--mono); font-size: 12px; line-height: 1.5; background: var(--term); border-radius: 4px; padding: 8px 0; overflow-x: auto; min-width: 0; }
+.term table { border-collapse: collapse; }
+.term td { padding: 0; white-space: pre; vertical-align: top; }
+.term td.ln { color: var(--ink-2); opacity: .55; text-align: right; padding: 0 10px 0 12px; user-select: none; font-variant-numeric: tabular-nums; border-right: 1px solid var(--rule); }
+.term td.tx { padding: 0 14px 0 10px; }
+.term tr.ruler td { color: var(--accent); opacity: .8; }
+
+/* şıklar */
+.opts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.opt { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; border: 1px solid var(--rule); border-radius: 6px; padding: 9px 12px; cursor: pointer; background: var(--sheet); min-width: 0; }
+.opt:hover { border-color: var(--ink-2); }
+.opt.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.opt .let { font-family: var(--display); font-weight: 700; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--ink-2); font-size: 14px; }
+.opt.multi .let { border-radius: 5px; }
+.opt.sel .let { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt .body { min-width: 0; display: grid; gap: 6px; }
+.opt .code { font-family: var(--mono); font-size: 13.5px; overflow-x: auto; white-space: pre; padding-top: 3px; }
+.opt .outtext { font-family: var(--mono); font-size: 13.5px; white-space: pre; overflow-x: auto; padding-top: 3px; }
+.opt.locked { cursor: default; }
+.opt.right .code, .opt.right .outtext { background: var(--hl); color: var(--hl-ink); width: fit-content; max-width: 100%; padding: 1px 4px; border-radius: 2px; }
+.opt.wrongpick { background: var(--bad-bg); }
+.opt.wrongpick .let { border-color: var(--pen); color: var(--pen); background: transparent; }
+.verdict-mini { font-family: var(--hand); font-size: 20px; line-height: 1; color: var(--pen); }
+.verdict-mini.ok { color: var(--ok); }
+details.simout { font-size: 13px; }
+details.simout summary { cursor: pointer; color: var(--ink-2); width: fit-content; }
+details.simout pre { margin: 6px 0 0; font-family: var(--mono); font-size: 12px; background: var(--term); padding: 6px 10px; border-radius: 4px; overflow-x: auto; white-space: pre; max-height: 220px; }
+.errline { color: var(--pen); }
+
+/* boşluk doldurma */
+.codebox { font-family: var(--mono); font-size: 13px; line-height: 2.05; background: var(--term); border-radius: 4px; padding: 10px 14px; overflow-x: auto; white-space: pre; min-width: 0; }
+.classic { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px; }
+.classic .tree { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; border: 2px solid var(--ink); border-radius: 2px; padding: 10px 12px; white-space: pre; overflow-x: auto; }
+.classic .codebox { border: 2px solid var(--ink); border-radius: 2px; }
+@media (max-width: 640px) { .classic { grid-template-columns: 1fr; } }
+select.blank { font-family: var(--mono); font-size: 12.5px; border: 0; border-bottom: 2px dotted var(--ink-2); background: var(--sheet); color: var(--ink); padding: 1px 4px; border-radius: 3px 3px 0 0; max-width: 100%; cursor: pointer; }
+select.blank.ok { border-bottom: 2px solid var(--ok); background: var(--ok-bg); }
+select.blank.no { border-bottom: 2px solid var(--pen); background: var(--bad-bg); }
+.fix { font-family: var(--mono); font-size: 12.5px; color: var(--pen); font-weight: 600; margin-left: 6px; }
+.follow { display: grid; gap: 8px; border-top: 1px dashed var(--rule); padding-top: 12px; }
+.follow-q { font-size: 15.5px; }
+.fopts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fopt { border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-family: var(--mono); font-size: 13px; white-space: pre; text-align: left; }
+.fopt.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.fopt.right { background: var(--hl); color: var(--hl-ink); border-color: var(--hl); }
+.fopt.wrongpick { background: var(--bad-bg); border-color: var(--pen); }
+
+/* eylemler ve geri bildirim */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { border: 1.5px solid var(--ink); background: var(--ink); color: var(--paper); border-radius: 6px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.kbd { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.feedback { display: grid; gap: 10px; border-left: 3px solid var(--pen); padding: 4px 0 4px 16px; }
+.verdict { font-family: var(--hand); font-weight: 700; font-size: 30px; line-height: 1; color: var(--pen); }
+.verdict.ok { color: var(--ok); }
+.explain { font-size: 15.5px; max-width: 70ch; }
+.explain ol.steps { margin: 6px 0; padding-left: 22px; display: grid; gap: 3px; }
+.trace { display: grid; gap: 6px; }
+.trace-title { font-size: 14px; font-weight: 700; }
+.stage { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; align-items: baseline; }
+.stage .n { font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.stage .c { font-family: var(--mono); min-width: 0; overflow-wrap: anywhere; }
+.stage pre { grid-column: 2; margin: 0; font-family: var(--mono); font-size: 11.5px; background: var(--term); padding: 4px 8px; border-radius: 4px; overflow-x: auto; white-space: pre; max-height: 150px; }
+
+/* sınav */
+.progress { display: flex; flex-wrap: wrap; gap: 5px; }
+.dot { border: 1px solid var(--rule); background: var(--sheet); color: var(--ink-2); border-radius: 4px; min-width: 34px; padding: 3px 6px; font-family: var(--mono); font-size: 12px; cursor: pointer; text-align: center; }
+.dot.done { border-color: var(--ink-2); color: var(--ink); }
+.dot.cur { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.dot.full { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.dot.part { background: var(--hl); border-color: var(--hl); color: var(--hl-ink); }
+.dot.zero { background: var(--bad-bg); border-color: var(--pen); color: var(--pen); }
+.intro { display: grid; gap: 12px; }
+.intro h2, .result h2 { font-family: var(--display); font-size: 26px; margin: 0; line-height: 1.1; }
+.intro p { margin: 0; max-width: 64ch; color: var(--ink-2); }
+.dist { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dist th, .dist td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--rule); }
+.dist td.p { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.tablewrap { overflow-x: auto; }
+.result { display: grid; gap: 14px; }
+.score { font-family: var(--display); font-weight: 800; font-size: clamp(54px, 12vw, 84px); line-height: .9; }
+.score small { font-size: .35em; color: var(--ink-2); font-weight: 700; }
+.score-note { font-family: var(--hand); font-size: 26px; color: var(--pen); }
+footer { font-size: 13px; color: var(--ink-2); max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) { .sheet { animation: rise .22s ease-out; } @keyframes rise { from { transform: translateY(4px); opacity: .6; } to { transform: none; opacity: 1; } } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Sistem Programlama · Quiz 1</span>
+      <h1>Kabuk <span class="mark">Antrenmanı</span></h1>
+    </div>
+    <div class="modes" role="group" aria-label="Mod">
+      <button id="m-practice" aria-pressed="true">Pratik</button>
+      <button id="m-exam" aria-pressed="false">Deneme sınavı</button>
+    </div>
+  </header>
+
+  <section id="practice" class="panel">
+    <div class="chips-head">
+      <span class="eyebrow">Konular <span id="chip-note"></span></span>
+      <span><button class="linkbtn" id="all-topics">Hepsi</button></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="stats" id="stats"></div>
+    <div id="pq"></div>
+  </section>
+
+  <section id="exam" class="panel" hidden>
+    <div id="ex"></div>
+  </section>
+
+  <footer>Sorular her seferinde rastgele veriyle yeniden üretilir: <code>top</code>, <code>last</code>, CSV, <code>/etc/passwd</code> ve dosya adları her soruda farklıdır. Doğru cevaplar, şıklardaki komutlar sayfadaki bir shell simülatöründe çalıştırılarak hesaplanır; simülatör gerçek bash çıktılarıyla karşılaştırılarak test edilmiştir. Kısayollar: <span class="kbd">1–5</span> şık seç · <span class="kbd">Enter</span> kontrol et / sonraki.</footer>
+</div>
+
+<script>
+/* ==========================================================================
+   Quiz 1 soru motoru: küçük bir shell simülatörü + rastgele soru üreticileri
+   Her doğru cevap, komutlar simülatörde çalıştırılarak hesaplanır.
+   ========================================================================== */
+(function (root) {
+'use strict';
+
+/* ---------------- rastgelelik ---------------- */
+const R = {
+  int: (a, b) => a + Math.floor(Math.random() * (b - a + 1)),
+  pick: a => a[Math.floor(Math.random() * a.length)],
+  chance: p => Math.random() < p,
+  shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; },
+  sample(a, n) { return R.shuffle(a).slice(0, n); },
+};
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const C = s => `<code>${esc(s)}</code>`;
+const uniq = a => [...new Set(a)];
+const cmpBytes = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
+/* ======================= SHELL SİMÜLATÖRÜ ======================= */
+function splitPipe(cmd) {
+  const parts = []; let cur = '', q = null;
+  for (let i = 0; i < cmd.length; i++) {
+    const c = cmd[i];
+    if (q) { cur += c; if (c === q) q = null; else if (c === '\\' && q === '"' && i + 1 < cmd.length) cur += cmd[++i]; continue; }
+    if (c === '"' || c === "'") { q = c; cur += c; continue; }
+    if (c === '|' ) { parts.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  parts.push(cur.trim());
+  return parts;
+}
+function tokenize(s) {
+  const t = []; let cur = '', q = null, quoted = false, started = false;
+  const push = () => { if (started) t.push({ v: cur, q: quoted }); cur = ''; quoted = false; started = false; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q === "'") { if (c === "'") q = null; else cur += c; continue; }
+    if (q === '"') { if (c === '"') q = null; else if (c === '\\' && '$`"\\'.includes(s[i + 1])) cur += s[++i]; else cur += c; continue; }
+    if (c === "'" || c === '"') { q = c; quoted = true; started = true; continue; }
+    if (c === '\\') { cur += s[++i] || ''; quoted = true; started = true; continue; }
+    if (/\s/.test(c)) { push(); continue; }
+    cur += c; started = true;
+  }
+  push();
+  return t;
+}
+function globToRe(g) {
+  let r = '^';
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === '*') r += '.*';
+    else if (c === '?') r += '.';
+    else if (c === '[') { const j = g.indexOf(']', i + 1); if (j < 0) { r += '\\['; continue; } r += '[' + g.slice(i + 1, j).replace(/^!/, '^') + ']'; i = j; }
+    else r += c.replace(/[.+^${}()|\\\/]/g, '\\$&');
+  }
+  return new RegExp(r + '$');
+}
+function expandArgs(toks, env) {
+  const out = [];
+  for (const t of toks) {
+    if (!t.q && /[*?[]/.test(t.v)) {
+      const re = globToRe(t.v);
+      const m = (env.ls || []).filter(n => re.test(n)).sort(cmpBytes);
+      if (m.length) out.push(...m); else out.push(t.v);
+    } else out.push(t.v);
+  }
+  return out;
+}
+/* POSIX BRE/ERE -> JS RegExp */
+function toJsRegex(p, ere, flags) {
+  let out = '';
+  for (let i = 0; i < p.length; i++) {
+    const c = p[i];
+    if (c === '\\') { out += '\\' + (p[i + 1] || '\\'); i++; continue; }
+    if (c === '[') {
+      let j = i + 1; if (p[j] === '^') j++; if (p[j] === ']') j++;
+      while (j < p.length && p[j] !== ']') j++;
+      out += p.slice(i, j + 1).replace(/\\/g, '\\\\'); i = j; continue;
+    }
+    if (!ere && '+?|(){}'.includes(c)) { out += '\\' + c; continue; }
+    if (!ere && c === '*' && (i === 0 || (i === 1 && p[0] === '^'))) { out += '\\*'; continue; }
+    out += c;
+  }
+  return new RegExp(out, flags || '');
+}
+function parseList(s) { // "1-7,49-54" -> [[1,7],[49,54]]
+  return s.split(',').map(x => {
+    if (/^\d+$/.test(x)) return [+x, +x];
+    const m = x.match(/^(\d*)-(\d*)$/); if (!m) throw new Error('liste ' + s);
+    return [m[1] ? +m[1] : 1, m[2] ? +m[2] : Infinity];
+  });
+}
+function optArg(args, i, flag) { // "-n3" or "-n" "3"
+  const a = args[i];
+  if (a.length > flag.length) return { val: a.slice(flag.length), next: i + 1 };
+  return { val: args[i + 1], next: i + 2 };
+}
+function numKey(s) {
+  const m = s.match(/^\s*(-?\d*\.?\d+)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+function sortKey(line, k, t) {
+  if (!k) return line;
+  if (t) return line.split(t).slice(k - 1).join(t);
+  let pos = 0;
+  for (let f = 1; f < k; f++) {
+    while (pos < line.length && /\s/.test(line[pos])) pos++;
+    while (pos < line.length && !/\s/.test(line[pos])) pos++;
+  }
+  return line.slice(pos);
+}
+const NOFILE = (cmd, f) => `${cmd}: ${f}: Böyle bir dosya ya da dizin yok`;
+
+function runCmd(stage, input, env) {
+  let toks = tokenize(stage).filter(t => !(t.v === '2>/dev/null'));
+  const argv = expandArgs(toks, env);
+  const name = argv[0], args = argv.slice(1);
+  const readFile = (f, who) => {
+    if (Object.prototype.hasOwnProperty.call(env.files || {}, f)) return { lines: env.files[f] };
+    return { err: NOFILE(who, f) };
+  };
+  const src = (files, who) => {
+    if (!files.length) return { lines: input || [] };
+    let lines = [], err = null;
+    for (const f of files) { const r = readFile(f, who); if (r.err) err = r.err; else lines = lines.concat(r.lines); }
+    return { lines, err };
+  };
+  switch (name) {
+    case 'top': return { out: env.top.slice(), status: 0 };
+    case 'last': return { out: env.last.slice(), status: 0 };
+    case 'who': return { out: (env.who || []).slice(), status: 0 };
+    case 'echo': return { out: [args.join(' ')], status: 0 };
+    case 'cat': { const r = src(args, 'cat'); return { out: r.lines, status: r.err ? 1 : 0, err: r.err }; }
+    case 'more': { const r = src(args, 'more'); return { out: r.lines, status: r.err ? 1 : 0, err: r.err }; }
+    case 'ls': {
+      if (!args.length) return { out: (env.ls || []).slice().sort(cmpBytes), status: 0 };
+      const ok = [], bad = [];
+      for (const a of args) ((env.ls || []).includes(a) ? ok : bad).push(a);
+      return { out: ok.sort(cmpBytes), status: bad.length ? 2 : 0, err: bad.length ? `ls: '${bad[0]}' erişilemedi: Böyle bir dosya ya da dizin yok` : null };
+    }
+    case 'find': {
+      // sadece: find . -maxdepth 1 -name "desen"
+      let pat = null; for (let i = 0; i < args.length; i++) if (args[i] === '-name') pat = args[i + 1];
+      const re = globToRe(pat);
+      return { out: (env.ls || []).filter(n => re.test(n)).map(n => './' + n), status: 0 };
+    }
+    case 'head': case 'tail': {
+      let n = 10, plus = false, files = [];
+      for (let i = 0; i < args.length;) {
+        if (args[i].startsWith('-n')) { const o = optArg(args, i, '-n'); let v = o.val; if (v.startsWith('+')) { plus = true; v = v.slice(1); } n = parseInt(v, 10); i = o.next; }
+        else { files.push(args[i]); i++; }
+      }
+      const r = src(files, name); const L = r.lines;
+      let out;
+      if (name === 'head') out = n < 0 ? L.slice(0, Math.max(0, L.length + n)) : L.slice(0, n);
+      else if (plus) out = L.slice(Math.max(0, n - 1));
+      else out = n === 0 ? [] : L.slice(-Math.abs(n));
+      return { out, status: r.err ? 1 : 0, err: r.err };
+    }
+    case 'cut': {
+      let mode = null, list = null, d = '\t', files = [];
+      for (let i = 0; i < args.length;) {
+        const a = args[i];
+        if (a.startsWith('-c')) { const o = optArg(args, i, '-c'); mode = 'c'; list = parseList(o.val); i = o.next; }
+        else if (a.startsWith('-f')) { const o = optArg(args, i, '-f'); mode = 'f'; list = parseList(o.val); i = o.next; }
+        else if (a.startsWith('-d')) { const o = optArg(args, i, '-d'); d = o.val; i = o.next; }
+        else { files.push(a); i++; }
+      }
+      const r = src(files, 'cut');
+      const inRange = p => list.some(([a, b]) => p >= a && p <= b);
+      const out = r.lines.map(line => {
+        if (mode === 'c') { let s = ''; for (let p = 1; p <= line.length; p++) if (inRange(p)) s += line[p - 1]; return s; }
+        if (!line.includes(d)) return line;
+        const fs = line.split(d); const sel = []; fs.forEach((f, idx) => { if (inRange(idx + 1)) sel.push(f); });
+        return sel.join(d);
+      });
+      return { out, status: r.err ? 1 : 0, err: r.err };
+    }
+    case 'sort': {
+      let n = false, rev = false, k = 0, t = null, files = [];
+      for (let i = 0; i < args.length;) {
+        const a = args[i];
+        if (a.startsWith('-k')) { const o = optArg(args, i, '-k'); k = parseInt(o.val, 10); i = o.next; }
+        else if (a.startsWith('-t')) { const o = optArg(args, i, '-t'); t = o.val; i = o.next; }
+        else if (/^-[nr]+$/.test(a)) { if (a.includes('n')) n = true; if (a.includes('r')) rev = true; i++; }
+        else { files.push(a); i++; }
+      }
+      const r = src(files, 'sort');
+      const out = r.lines.slice().sort((x, y) => {
+        const kx = sortKey(x, k, t), ky = sortKey(y, k, t);
+        let c = n ? (numKey(kx) - numKey(ky)) : cmpBytes(kx, ky);
+        if (c === 0) c = cmpBytes(x, y);
+        return rev ? -c : c;
+      });
+      return { out, status: r.err ? 2 : 0, err: r.err };
+    }
+    case 'grep': case 'egrep': {
+      let v = false, c = false, E = name === 'egrep', i_ = false, o = false, pat = null, files = [];
+      for (const a of args) {
+        if (pat === null && /^-[vcEio]+$/.test(a)) { v ||= a.includes('v'); c ||= a.includes('c'); E ||= a.includes('E'); i_ ||= a.includes('i'); o ||= a.includes('o'); }
+        else if (pat === null) pat = a; else files.push(a);
+      }
+      let lines = input || [], err = null;
+      if (files.length) { const rr = src(files, 'grep'); lines = rr.lines; err = rr.err ? rr.err.replace(/^grep/, 'grep') : null; }
+      const re = toJsRegex(pat, E, i_ ? 'i' : '');
+      const sel = lines.filter(l => re.test(l) !== v);
+      let out;
+      if (c) out = [String(sel.length)];
+      else if (o && !v) { out = []; const g = new RegExp(re.source, 'g' + (i_ ? 'i' : '')); for (const l of sel) { let m; g.lastIndex = 0; while ((m = g.exec(l))) { if (m[0] === '') { g.lastIndex++; continue; } out.push(m[0]); } } }
+      else out = sel;
+      if (err && files.length && !lines.length) return { out: c ? [] : [], status: 2, err };
+      return { out, status: err ? 2 : (sel.length ? 0 : 1), err };
+    }
+    case 'wc': {
+      const files = args.filter(a => a !== '-l');
+      if (!files.length) return { out: [String((input || []).length)], status: 0 };
+      const out = []; let err = null, tot = 0;
+      for (const f of files) { const r = readFile(f, 'wc'); if (r.err) err = r.err; else { out.push(`${r.lines.length} ${f}`); tot += r.lines.length; } }
+      if (files.length > 1) out.push(`${tot} total`);
+      return { out, status: err ? 1 : 0, err };
+    }
+    default: return { out: [], status: 127, err: `${name}: komut bulunamadı` };
+  }
+}
+function run(cmd, env) {
+  let lines = null, status = 0; const errs = [], trace = [];
+  for (const st of splitPipe(cmd)) {
+    const r = runCmd(st, lines, env);
+    lines = r.out; status = r.status; if (r.err) errs.push(r.err);
+    trace.push({ cmd: st, out: lines.slice(), err: r.err || null });
+  }
+  return { out: lines, status, errs, trace };
+}
+const norm = (lines, unordered) => {
+  let l = lines.map(x => x.replace(/\s+$/, '').replace(/^\.\//, ''));
+  if (unordered) l = l.slice().sort(cmpBytes);
+  return l.join('\n');
+};
+
+/* ======================= VERİ ÜRETİCİLERİ ======================= */
+const PROCS = ['firefox', 'chrome', 'code', 'slack', 'java', 'python3', 'node', 'mysqld', 'dockerd', 'Xorg', 'gnome-shell', 'spotify', 'sshd', 'postgres', 'nginx', 'vlc', 'thunderbird', 'discord', 'terminator', 'pulseaudio', 'gcc', 'apache2'];
+const ROOTP = new Set(['dockerd', 'Xorg', 'sshd', 'nginx', 'apache2']);
+function distinct(n, gen) { const s = new Set(); while (s.size < n) s.add(gen()); return [...s]; }
+const f1 = x => (x / 10).toFixed(1);
+function pad(s, w, left) { s = String(s); return left ? s.padEnd(w) : s.padStart(w); }
+
+function genTop(n) {
+  n = n || 8;
+  const user = R.pick(['ogrenci', 'ali', 'ayse', 'mehmet', 'zeynep']);
+  const names = R.sample(PROCS, n - 1).concat(['top']);
+  const cpus = distinct(n, () => R.int(5, 850)).sort((a, b) => b - a);
+  let mems;
+  // RAM sıralaması CPU sıralamasından farklı olsun
+  do { mems = distinct(n, () => R.int(1, 160)); mems[n - 1] = Math.min(...mems) ; } while (new Set(mems).size < n || mems.slice(0, 3).join() === [...mems].sort((a, b) => b - a).slice(0, 3).join());
+  const pids = distinct(n, () => R.int(300, 99999));
+  const procs = names.map((cmd, i) => ({
+    pid: pids[i], user: cmd === 'mysqld' ? 'mysql' : cmd === 'postgres' ? 'postgres' : ROOTP.has(cmd) ? 'root' : user,
+    cpu: cpus[i], mem: mems[i], cmd,
+  }));
+  const hh = pad(R.int(8, 23), 2).replace(' ', '0'), mm = pad(R.int(0, 59), 2).replace(' ', '0'), ss = pad(R.int(0, 59), 2).replace(' ', '0');
+  const total = R.pick([7843.6, 15843.6, 31777.2]);
+  const used = +(total * R.int(35, 70) / 100).toFixed(1), free = +(total * R.int(5, 20) / 100).toFixed(1), cache = +(total - used - free).toFixed(1);
+  const head = [
+    `top - ${hh}:${mm}:${ss} up  ${R.int(1, 9)}:${pad(R.int(0, 59), 2).replace(' ', '0')},  ${R.int(1, 3)} user,  load average: 0.${R.int(10, 99)}, 0.${R.int(10, 99)}, 0.${R.int(10, 99)}`,
+    `Tasks: ${R.int(250, 450)} total,   1 running, ${R.int(249, 449)} sleeping,   0 stopped,   0 zombie`,
+    `%Cpu(s): ${pad(f1(R.int(30, 200)), 4)} us,  ${f1(R.int(5, 40))} sy,  0.0 ni, ${f1(R.int(700, 920))} id,  0.${R.int(0, 9)} wa,  0.0 hi,  0.${R.int(0, 9)} si,  0.0 st`,
+    `MiB Mem : ${pad(total.toFixed(1), 8)} total, ${pad(free.toFixed(1), 8)} free, ${pad(used.toFixed(1), 8)} used, ${pad(cache.toFixed(1), 8)} buff/cache`,
+    `MiB Swap:   4096.0 total,   4096.0 free,      0.0 used. ${pad((free + cache).toFixed(1), 8)} avail Mem`,
+    '',
+    '    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND',
+  ];
+  const rows = procs.map(p => {
+    const virt = R.int(14000, 6900000), res = R.int(5000, 990000), shr = R.int(3000, 210000);
+    const tm = `${R.int(0, 140)}:${pad(R.int(0, 59), 2).replace(' ', '0')}.${pad(R.int(0, 99), 2).replace(' ', '0')}`;
+    return `${pad(p.pid, 7)} ${pad(p.user, 8, true)} ${pad(20, 3)} ${pad(0, 3)} ${pad(virt, 7)} ${pad(res, 6)} ${pad(shr, 6)} ${p.cmd === 'top' ? 'R' : 'S'} ${pad(f1(p.cpu), 5)} ${pad(f1(p.mem), 5)} ${pad(tm, 9)} ${p.cmd}`;
+  });
+  return { lines: head.concat(rows), procs };
+}
+
+const USERS = ['ali', 'ayse', 'mehmet', 'zeynep', 'elif', 'selin', 'mert', 'deniz', 'kerem', 'burak', 'ece', 'okan'];
+const TRAPS = [['can', 'candan'], ['emre', 'emrecan'], ['ali', 'alican'], ['ece', 'ecenur'], ['mert', 'mertcan']];
+const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+function fmtDate(d) { return `${DOW[d.getDay()]} Nov ${pad(d.getDate(), 2)} ${pad(d.getHours(), 2).replace(' ', '0')}:${pad(d.getMinutes(), 2).replace(' ', '0')}`; }
+function hm(mins) { return `${pad(Math.floor(mins / 60), 2).replace(' ', '0')}:${pad(mins % 60, 2).replace(' ', '0')}`; }
+function genLast(opt) {
+  opt = opt || {};
+  const trap = R.pick(TRAPS);
+  const base = R.sample(USERS.filter(u => !trap.includes(u)), 3);
+  const people = opt.trap ? [trap[0], trap[0], trap[1]].concat(base.slice(0, 2)) : base.concat(R.chance(.5) ? [trap[0]] : []);
+  const nUser = R.int(6, 7);
+  const recs = [];
+  for (let i = 0; i < nUser; i++) recs.push({ user: R.pick(people) });
+  if (opt.trap) { recs[R.int(1, nUser - 1)].user = trap[0]; recs[R.int(0, nUser - 1)].user = trap[1]; if (recs.filter(r => r.user === trap[0]).length < 2) recs[nUser - 1].user = trap[0]; }
+  // reboot kayıtları
+  const rb1 = R.int(1, 2), rb2 = R.int(4, 6);
+  recs.splice(rb1, 0, { user: 'reboot' }); recs.splice(rb2, 0, { user: 'reboot' });
+  let t = new Date(2026, 10, R.int(3, 6), R.int(19, 23), R.int(0, 59));
+  const firstStill = opt.still !== false;
+  const lines = recs.map((r, i) => {
+    t = new Date(t.getTime() - R.int(25, 600) * 60000);
+    const date = fmtDate(t);
+    if (r.user === 'reboot') {
+      const tail = i <= rb1 ? '   still running' : ` - ${hm(R.int(0, 1439))}  (${hm(R.int(30, 700))})`;
+      return `${pad('reboot', 8, true)} ${pad('system boot', 12, true)} ${pad('6.8.0-45-generic', 16, true)} ${date}${tail}`;
+    }
+    const tty = R.chance(.7) ? `pts/${R.int(0, 3)}` : 'tty2';
+    const host = tty === 'tty2' ? 'tty2' : R.pick([`192.168.${R.int(0, 2)}.${R.int(2, 99)}`, `10.0.${R.int(0, 9)}.${R.int(2, 99)}`, `${R.int(78, 212)}.${R.int(10, 199)}.${R.int(1, 99)}.${R.int(2, 99)}`]);
+    let tail;
+    if (i === 0 && firstStill) tail = '   still logged in';
+    else tail = R.pick([` - ${hm(R.int(0, 1439))}  (${hm(R.int(5, 180))})`, ' - down   (' + hm(R.int(10, 200)) + ')', ' - crash  (' + hm(R.int(10, 600)) + ')']);
+    return `${pad(r.user, 8, true)} ${pad(tty, 12, true)} ${pad(host, 16, true)} ${date}${tail}`;
+  });
+  const t0 = new Date(t.getTime() - R.int(2, 30) * 60000);
+  lines.push('', `wtmp begins ${fmtDate(t0)}:${pad(R.int(0, 59), 2).replace(' ', '0')} 2026`);
+  const who = lines.filter(l => l.includes('still logged in')).map(l => `${l.slice(0, 8)} ${l.slice(9, 21)} 2026-11-0${t.getDate() % 9 + 1} 10:00`);
+  return { lines, trap, recs: lines.filter(l => l && !l.startsWith('wtmp')), who };
+}
+
+/* ======================= SORU YARDIMCILARI ======================= */
+/* Komut şıklı sorular: havuzdaki her komut çalıştırılır, beklenen çıktıyla karşılaştırılır. */
+function commandQuestion({ env, canonical, pool, multi, unordered, expected, nOpts }) {
+  nOpts = nOpts || 5;
+  const exp = expected !== undefined ? expected : norm(run(canonical, env).out, unordered);
+  const evald = uniq([canonical].concat(pool)).map(cmd => {
+    const r = run(cmd, env);
+    return { text: cmd, out: r.out, errs: r.errs, trace: r.trace, correct: norm(r.out, unordered) === exp && !r.errs.length };
+  });
+  if (!evald[0].correct) throw new Error('canonical yanlış: ' + canonical);
+  let chosen;
+  const rights = evald.filter(o => o.correct), wrongs = evald.filter(o => !o.correct);
+  if (multi) {
+    const nr = Math.min(rights.length, R.int(1, 3));
+    const r = [evald[0]].concat(R.sample(rights.slice(1), nr - 1));
+    if (wrongs.length < nOpts - r.length) throw new Error('yetersiz yanlış');
+    chosen = r.concat(R.sample(wrongs, nOpts - r.length));
+  } else {
+    if (wrongs.length < nOpts - 1) throw new Error('yetersiz yanlış şık: ' + canonical);
+    chosen = [evald[0]].concat(R.sample(wrongs, nOpts - 1));
+  }
+  return { options: R.shuffle(chosen), expectedText: exp };
+}
+function textOptions(correct, distractors, n) {
+  n = n || 4;
+  const c = String(correct);
+  const ds = uniq(distractors.map(String)).filter(d => d !== c);
+  if (ds.length < n - 1) throw new Error('yetersiz metin şıkkı');
+  return R.shuffle([{ text: c, correct: true }].concat(R.sample(ds, n - 1).map(t => ({ text: t, correct: false }))));
+}
+const showOut = lines => lines.length ? lines.join('\n') : '(boş çıktı)';
+
+/* ======================= ÜRETİCİLER ======================= */
+const G = {};
+
+/* ---------- 1. Yönlendirme ---------- */
+G.redir = () => {
+  const v = R.int(0, 4);
+  const w = R.pick(['error', 'warning', 'fail', 'timeout']);
+  const L = R.pick(['log.txt', 'sistem.log', 'kayit.txt']), H = R.pick(['hatalar.txt', 'sorunlar.txt', 'rapor.txt']);
+  let prompt, opts, exp;
+  if (v === 0) {
+    prompt = `${C(L)} dosyasındaki ${C(w)} içeren satırları, ${C(H)} dosyasının <b>eski içeriğini silmeden sonuna ekleyen</b> komut hangisidir?`;
+    opts = textOptions(`grep "${w}" ${L} >> ${H}`, [`grep "${w}" ${L} > ${H}`, `grep "${w}" ${H} >> ${L}`, `grep "${w}" ${L} < ${H}`, `grep "${w}" ${L} | tee ${H}`, `grep "${w}" >> ${L} ${H}`], 5);
+    exp = `${C('>>')} dosyanın <b>sonuna ekler</b>. ${C('>')} ve parametresiz ${C('tee')} dosyayı sıfırdan yazar (eski içerik silinir). ${C('<')} girdi verir; grep zaten ${C(L)}'yi okuduğu için hiçbir şey dosyaya yazılmaz.`;
+  } else if (v === 1) {
+    const out = R.pick(['whole.txt', 'hepsi.txt', 'birlesik.txt']);
+    prompt = `Bir dizinde ${C('.txt')} ile biten tüm dosyaların içeriklerini tek dosyada birleştirip ${C(out)} adıyla kaydeden komut hangisidir?`;
+    opts = textOptions(`cat *.txt > ${out}`, [`cat ${out} < *.txt`, `cat ${out} > *.txt`, `mv *.txt ${out}`, `cp *.txt ${out}`, `cat *.txt | ${out}`], 5);
+    exp = `Veri soldan sağa akar: ${C('cat *.txt')} tüm dosyaları sırayla ekrana basar, ${C('>')} bu çıktıyı ${C(out)} dosyasına yazar. ${C('mv')}/${C('cp')} içerik birleştirmez; ${C('| ' + out)} ise dosyayı komut sanır.`;
+  } else if (v === 2) {
+    const a = R.pick(['a.txt', 'ocak.txt']), b = R.pick(['b.txt', 'subat.txt']), c = R.pick(['c.txt', 'toplam.txt']), h = R.pick(['hata.log', 'err.log']);
+    prompt = `${C(a)} ve ${C(b)} dosyalarını birleştirip ${C(c)}'ye yazan, oluşabilecek <b>hata mesajlarını</b> ise ${C(h)}'a yönlendiren komut hangisidir?`;
+    opts = textOptions(`cat ${a} ${b} > ${c} 2> ${h}`, [`cat ${a} ${b} 2> ${c} > ${h}`, `cat ${a} > ${b} > ${c} 2> ${h}`, `cp ${a} ${b} ${c} 2> ${h}`, `cat ${c} < ${a} ${b} 2> ${h}`, `cat ${a} ${b} >> ${h} 2> ${c}`], 5);
+    exp = `${C('>')} (ya da ${C('1>')}) normal çıktıyı (stdout), ${C('2>')} hata çıktısını (stderr) yönlendirir. Yönleri ters yazan şık çıktıyı hata dosyasına yazar.`;
+  } else if (v === 3) {
+    prompt = `${C(L)} dosyasının satır sayısını, yanında dosya adı <b>olmadan</b>, sadece sayı olarak veren komut hangisidir?`;
+    opts = textOptions(`wc -l < ${L}`, [`wc -l ${L}`, `cat ${L} > wc -l`, `wc -l > ${L}`, `wc ${L}`, `head -n 1 ${L} | wc -l`], 5);
+    exp = `${C('wc -l ' + L)} çıktısı "5 ${L}" gibidir (dosya adıyla). ${C('<')} ile dosya stdin olarak verildiğinde wc dosya adını bilmez, sadece "5" yazar. ${C('wc -l > ' + L)} dosyanın içini siler!`;
+  } else {
+    prompt = `${C('find /')} komutunun ürettiği <b>"Permission denied" hata mesajlarını</b> ekranda göstermeyip sonuçları göstermek için hangisi kullanılır?`;
+    opts = textOptions('find / -name "*.conf" 2>/dev/null', ['find / -name "*.conf" > /dev/null', 'find / -name "*.conf" | /dev/null', 'find / -name "*.conf" < /dev/null', 'find / -name "*.conf" 2> errors.log > /dev/null'], 5);
+    exp = `Hata mesajları stderr'e (2) gider. ${C('2>/dev/null')} sadece hataları çöpe atar. ${C('> /dev/null')} ise <b>sonuçları</b> çöpe atar, hatalar ekranda kalır.`;
+  }
+  return { topic: 'redir', kind: 'single', prompt, options: opts, explain: exp, optKind: 'code' };
+};
+
+/* ---------- 2. last ---------- */
+G.last = () => {
+  const v = R.int(0, 4);
+  const L = genLast({ trap: v === 1 });
+  const env = { last: L.lines, who: L.who, files: {} };
+  let canonical, pool, prompt, exp, unordered = false;
+  const K = R.int(2, 4);
+  if (v === 0) {
+    // reboot ilk K satırın içinde olsun
+    canonical = `last | grep -v "reboot" | head -n ${K} | cut -d' ' -f1`;
+    pool = [`last | head -n ${K} | grep -v "reboot" | cut -d' ' -f1`, `last | grep -v "reboot" | head -n ${K} | cut -d' ' -f2`, `last | head -n ${K} | cut -c1-8`, `cat last | grep -v "reboot" | head -n ${K} | cut -d' ' -f1`, `last | grep -v "reboot" | tail -n ${K} | cut -d' ' -f1`, `last | grep "reboot" | head -n ${K} | cut -d' ' -f1`, `last | cut -d' ' -f1 | head -n ${K}`];
+    prompt = `<code>reboot</code> kayıtları hariç, sisteme <b>en son giriş yapan ${K} kaydın</b> kullanıcı adlarını listeleyen komut hangisidir?`;
+    exp = `Önce <b>filtrele</b> (${C('grep -v "reboot"')}), sonra <b>say</b> (${C('head -n ' + K)}), en son kullanıcı adını kes (${C("cut -d' ' -f1")}). Sıra ters olursa reboot satırı ilk ${K} satırın içinden atılır ve eksik isim kalır. ${C('last')} bir komuttur, dosya değildir: ${C('cat last')} hata verir.`;
+  } else if (v === 1) {
+    const [u, t] = L.trap;
+    canonical = `last | grep -c "^${u} "`;
+    pool = [`last | grep "${u}" | wc -l`, `last | cut -d' ' -f1 | grep -c "${u}"`, `grep -c "^${u} " last`, `last | grep -c "${u}$"`, `last | head -n 3 | grep -c "${u}"`, `last | grep -v "${u}" | wc -l`];
+    prompt = `last çıktısına göre ${C(u)} kullanıcısının <b>kaç kez</b> giriş yaptığını veren komut hangisidir? (Dikkat: ${C(t)} adlı başka bir kullanıcı da var.)`;
+    exp = `${C('^' + u + ' ')}: satır başında ${C(u)} ve hemen ardından boşluk. Böylece ${C(t)} sayılmaz. Sadece ${C('"' + u + '"')} aramak ${C(t)} satırlarını da yakalar. ${C('grep -c')} eşleşen satır sayısını verir.`;
+  } else if (v === 2) {
+    canonical = `last | grep "still logged in" | cut -d' ' -f1`;
+    pool = [`last | grep "still" | cut -d' ' -f1`, `who | grep "still logged in"`, `last | grep -v "still logged in" | cut -d' ' -f1`, `last | cut -d' ' -f1 | grep "still logged in"`, `last | head -n 1 | cut -d' ' -f2`, `last | grep "logged" | cut -d' ' -f2`];
+    prompt = `last çıktısına göre <b>şu anda hâlâ oturumu açık olan</b> kullanıcıların adlarını listeleyen komut hangisidir?`;
+    exp = `Açık oturumlar "still logged in" ile biter. Sadece ${C('"still"')} aramak ${C('reboot … still running')} satırını da yakalar. ${C('cut')} önce yapılırsa "still logged in" metni silinir ve grep hiçbir şey bulamaz.`;
+  } else if (v === 3) {
+    canonical = `last | grep -c "reboot"`;
+    pool = [`last | grep "reboot"`, `last | wc -l reboot`, `grep -c "reboot" last`, `last | grep -v -c "reboot"`, `last | grep "reboot" | head -n 1`, `last | wc -l`];
+    prompt = `last çıktısında sistemin <b>kaç kez yeniden başlatıldığını</b> (reboot kayıt sayısı) veren komut hangisidir?`;
+    exp = `${C('grep -c')} eşleşen satırları <b>sayar</b>. Sadece ${C('grep "reboot"')} satırları basar, sayı vermez. ${C('-v -c')} reboot <b>olmayan</b> satırları sayar.`;
+  } else {
+    canonical = `last | head -n -2 | tail -n ${K}`;
+    pool = [`last | tail -n ${K}`, `last | head -n ${K}`, `last | tail -n +3 | head -n ${K}`, `last | head -n -2 | head -n ${K}`, `last | tail -n +${K} | head -n -2`, `last | head -n -1 | tail -n ${K}`];
+    prompt = `last çıktısının sonundaki boş satır ve ${C('wtmp begins')} satırı hariç, <b>en eski ${K} kaydı</b> listeleyen komut hangisidir?`;
+    exp = `${C('head -n -2')} son 2 satırı (boş satır + wtmp) atar, ardından ${C('tail -n ' + K)} en alttaki (en eski) ${K} kaydı alır. last en yeniyi <b>en üste</b> yazar.`;
+  }
+  const q = commandQuestion({ env, canonical, pool, unordered });
+  return { topic: 'last', kind: 'single', context: [{ title: '$>last', text: L.lines.join('\n') }], prompt, options: q.options, explain: exp, optKind: 'code', sim: true };
+};
+
+/* ---------- 3a. ; && || ---------- */
+G.chain = () => {
+  const S = [['pwd > /dev/null', 'pwd başarılı'], ['ls /etc/passwd > /dev/null', 'ls başarılı (dosya var)'], ['cd /tmp', 'cd başarılı'], ['whoami > /dev/null', 'whoami başarılı']];
+  const F = [['ls /olmayan 2>/dev/null', 'ls başarısız (dizin yok)'], ['mkdir /etc/deneme 2>/dev/null', 'mkdir başarısız (root yetkisi yok)'], ['cd /yok 2>/dev/null', 'cd başarısız (dizin yok)'], ['grep "zzzz" /etc/passwd', 'grep başarısız (eşleşme yok)'], ['mkdir /bin/foo 2>errors.log', 'mkdir başarısız (root yok), hata errors.log dosyasına']];
+  const words = R.sample(['merhaba', 'nasılsın', 'tamam', 'olmadı', 'bitti', 'devam', 'evet', 'hayır', 'A', 'B', 'C'], 4);
+  const first = R.pick(['S', 'F', 'F', 'E']);
+  const cmds = [];
+  if (first === 'S') { const s = R.pick(S); cmds.push({ c: s[0], ok: true, out: null, d: s[1] }); }
+  else if (first === 'F') { const f = R.pick(F); cmds.push({ c: f[0], ok: false, out: null, d: f[1] }); }
+  else cmds.push({ c: `echo "${words[3]}"`, ok: true, out: words[3], d: 'echo her zaman başarılı' });
+  const n = R.int(2, 3);
+  const ops = [];
+  for (let i = 0; i < n; i++) { ops.push(R.pick([';', '&&', '||', '&&', '||'])); cmds.push({ c: `echo "${words[i]}"`, ok: true, out: words[i], d: 'echo başarılı' }); }
+  const text = cmds.map((c, i) => (i ? ` ${ops[i - 1]} ` : '') + c.c).join('');
+  // değerlendirme (soldan sağa)
+  const evalChain = (opsUse, firstOk) => {
+    let st = firstOk; const out = []; const steps = [];
+    if (cmds[0].out) out.push(cmds[0].out);
+    steps.push(`${C(cmds[0].c)} → ${st ? '<b>başarılı</b>' : '<b>başarısız</b>'} (${cmds[0].d})`);
+    for (let i = 1; i < cmds.length; i++) {
+      const op = opsUse[i - 1];
+      const go = op === ';' || (op === '&&' && st) || (op === '||' && !st);
+      if (go) { out.push(cmds[i].out); st = true; steps.push(`${C(op)} önceki ${op === ';' ? 'sonuçtan bağımsız' : st && op === '&&' ? 'başarılı' : 'başarısız'} → ${C(cmds[i].c)} <b>çalışır</b> → "${esc(cmds[i].out)}"`); }
+      else steps.push(`${C(op)} önceki ${op === '&&' ? 'başarısız (0 AND X = 0)' : 'başarılı (1 OR X = 1)'} → ${C(cmds[i].c)} <b>atlanır</b>`);
+    }
+    return { out, steps };
+  };
+  const real = evalChain(ops, cmds[0].ok);
+  const fix = s => (s.length ? s.join('\n') : '(boş çıktı)');
+  const alt = [
+    evalChain(ops.map(() => ';'), true).out,
+    evalChain(ops.map(o => o === '&&' ? '||' : o === '||' ? '&&' : o), cmds[0].ok).out,
+    evalChain(ops, !cmds[0].ok).out,
+    real.out.slice(0, 1), real.out.slice(1), [], cmds.filter(c => c.out).map(c => c.out).reverse(),
+    cmds.slice(1).map(c => c.out).slice(0, 1), cmds.slice(1).map(c => c.out).slice(-1),
+  ].map(fix);
+  // sağdan gruplama alternatifi
+  const options = textOptions(fix(real.out), alt, 4);
+  return {
+    topic: 'chain', kind: 'single', prompt: `Aşağıdaki komut satırının çıktısı nedir? (root yetkisi yoktur.)<pre class="cmd">$&gt;${esc(text)}</pre>`,
+    options, optKind: 'out',
+    explain: `Zincir <b>soldan sağa</b> değerlendirilir; her adımda bir önceki sonucun başarısına bakılır:<ol class="steps">${real.steps.map(s => `<li>${s}</li>`).join('')}</ol>${C(';')} sonuca bakmaz · ${C('&&')} önceki <b>başarılıysa</b> · ${C('||')} önceki <b>başarısızsa</b> çalışır.`,
+  };
+};
+
+/* ---------- 3b. Aritmetik ve tırnak ---------- */
+function bcDiv(a, b, scale) { // a,b pozitif tam sayı; bc gibi keser
+  const q = Math.floor(a * Math.pow(10, scale) / b);
+  let s = String(q).padStart(scale + 1, '0');
+  let ip = s.slice(0, s.length - scale), fp = s.slice(s.length - scale);
+  if (scale === 0) return ip;
+  if (ip === '0') ip = '';
+  return ip + '.' + fp;
+}
+G.arith = () => {
+  const v = R.int(0, 5);
+  let cmd, ans, ds, exp;
+  if (v === 0) {
+    const b = R.int(3, 9), a = b * R.int(2, 9) + R.int(1, b - 1);
+    cmd = `echo $((${a} / ${b})) $((${a} % ${b}))`; ans = `${Math.floor(a / b)} ${a % b}`;
+    ds = [`${(a / b).toFixed(2)} ${a % b}`, `${Math.round(a / b)} ${a % b}`, `${a % b} ${Math.floor(a / b)}`, `${Math.floor(a / b)} ${(a % b) / b}`.slice(0, 8), `${Math.floor(a / b)}`];
+    exp = `${C('$(( ))')} sadece <b>tam sayı</b> aritmetiği yapar; ${a}/${b} = ${Math.floor(a / b)} (ondalık atılır, yuvarlanmaz). ${C('%')} kalanı verir: ${a} = ${b}×${Math.floor(a / b)} + <b>${a % b}</b>.`;
+  } else if (v === 1) {
+    const sc = R.int(2, 4); let a, b; do { a = R.int(1, 25); b = R.pick([3, 6, 7, 8, 9, 11, 12]); } while (a % b === 0);
+    cmd = `echo "scale=${sc}; ${a}/${b}" | bc`; ans = bcDiv(a, b, sc);
+    const rounded = (a / b).toFixed(sc), lead = ans.startsWith('.') ? '0' + ans : ans.replace(/^/, '');
+    ds = [rounded.startsWith('0.') ? rounded.slice(1) : rounded, lead, String(Math.floor(a / b)), bcDiv(a, b, sc + 1), (a / b).toFixed(sc), bcDiv(a, b, sc - 1)];
+    exp = `${C('bc')} ${C('scale=' + sc)} ile virgülden sonra ${sc} basamak hesaplar ve fazlasını <b>keser</b> (yuvarlamaz)${ans.startsWith('.') ? '. Sonuç 1\'den küçükse bc baştaki <b>0\'ı yazmaz</b>' : ''}: ${a}/${b} = ${(a / b).toFixed(6)}… → <b>${ans}</b>.`;
+  } else if (v === 2) {
+    const a = R.int(2, 9), b = R.int(2, 9);
+    const sp = R.chance(.5);
+    cmd = sp ? `expr ${a} + ${b}` : `expr ${a}+${b}`; ans = sp ? String(a + b) : `${a}+${b}`;
+    ds = [String(a + b), `${a}+${b}`, `${a} + ${b}`, 'expr: syntax error', `${a}${b}`];
+    exp = sp ? `${C('expr')} operatörün iki yanında boşluk görünce işlemi yapar: ${a + b}.` : `${C('expr')} boşluksuz ${C(a + '+' + b)} ifadesini <b>tek bir metin</b> sanar ve aynen basar. Toplama için ${C(`expr ${a} + ${b}`)} yazılmalıdır.`;
+  } else if (v === 3) {
+    const val = R.pick(['5', 'ali', '42', 'linux']), nm = R.pick(['x', 'ad', 'k']);
+    cmd = `${nm}=${val}; echo "${nm}=$${nm}" '${nm}=$${nm}'`; ans = `${nm}=${val} ${nm}=$${nm}`;
+    ds = [`${nm}=${val} ${nm}=${val}`, `${nm}=$${nm} ${nm}=${val}`, `${nm}=$${nm} ${nm}=$${nm}`, `${nm}=${val}`];
+    exp = `<b>Çift tırnak</b> içinde değişkenler açılır ("${nm}=${val}"). <b>Tek tırnak</b> hiçbir şeyi açmaz, metni olduğu gibi basar ('${nm}=$${nm}').`;
+  } else if (v === 4) {
+    const a = R.int(2, 20), b = R.int(21, 60);
+    cmd = `a=${a}; b=$a; a=${b}; echo "$a $b"`; ans = `${b} ${a}`;
+    ds = [`${b} ${b}`, `${a} ${a}`, `${a} ${b}`, `$a $b`];
+    exp = `${C('b=$a')} atandığı andaki değeri (<b>${a}</b>) kopyalar. Sonradan ${C('a')} değişse de ${C('b')} değişmez.`;
+  } else {
+    const x = R.int(2, 9), m = R.int(2, 4), k = R.int(1, 5);
+    const bt = R.chance(.5);
+    cmd = bt ? `x=${x}; z=\`expr $x \\* ${m}\`; echo $z` : `x=${x}; x=$((x * ${m} + ${k})); echo $x`;
+    ans = bt ? String(x * m) : String(x * m + k);
+    ds = bt ? [`${x} * ${m}`, `$x * ${m}`, `expr $x \\* ${m}`, String(x + m)] : [String(x * (m + k)), `x * ${m} + ${k}`, String(x), `${x * m}`];
+    exp = bt ? `Backtick (${C('`komut`')}) komutu çalıştırıp çıktısını değişkene koyar. ${C('\\*')} yazılır çünkü düz ${C('*')} shell tarafından dosya adı joker karakteri sanılır. Sonuç ${x}×${m} = ${x * m}.` : `${C('$(( ))')} içinde değişkenler ${C('$')} olmadan da kullanılabilir. İşlem önceliği: önce çarpma (${x}×${m} = ${x * m}), sonra toplama (+${k}) → ${x * m + k}.`;
+  }
+  return { topic: 'arith', kind: 'single', prompt: `Aşağıdaki komutun çıktısı nedir?<pre class="cmd">$&gt;${esc(cmd)}</pre>`, options: textOptions(ans, ds, 4), optKind: 'out', explain: exp };
+};
+
+/* ---------- 3c. $0 recursive ve paralel ---------- */
+G.recpar = () => {
+  const v = R.int(0, 4);
+  if (v <= 1) {
+    // recursive
+    const up = v === 0;
+    const D = R.int(1, 3), Lm = R.int(4, 6);
+    let script, arg, lines = [];
+    if (up) {
+      arg = R.chance(.3) ? null : R.int(D, Lm);
+      const st = R.chance(.5) ? 1 : 2, cond = R.pick(['-lt', '-le']);
+      script = `count=\${1:-${D}}\necho "Call: $count"\nif [ "$count" ${cond} ${Lm} ]; then\n    bash "$0" $((count + ${st}))\nfi`;
+      let c = arg === null ? D : arg;
+      const okc = x => cond === '-lt' ? x < Lm : x <= Lm;
+      while (true) { lines.push(`Call: ${c}`); if (okc(c)) c += st; else break; }
+      const run_ = arg === null ? './say.sh' : `./say.sh ${arg}`;
+      const alt = [];
+      const mk = (start, lim, incl) => { const o = []; let c2 = start; while (true) { o.push(`Call: ${c2}`); if (incl ? c2 <= lim : c2 < lim) c2 += st; else break; if (o.length > 12) break; } return o.join('\n'); };
+      alt.push(mk(arg === null ? D : arg, Lm, cond === '-lt'), mk(D, Lm, cond === '-le'), `Call: ${arg === null ? D : arg}`, mk(arg === null ? D : arg, Lm, cond === '-le').split('\n').slice(0, -1).join('\n') || 'Call: 0', 'Call: $count', lines.slice().reverse().join('\n'));
+      return {
+        topic: 'recpar', kind: 'single', context: [{ title: '$>cat say.sh', text: '#!/bin/bash\n' + script }],
+        prompt: `${C(run_)} komutunun çıktısı nedir?`, options: textOptions(lines.join('\n'), alt, 4), optKind: 'out',
+        explain: `${C('${1:-' + D + '}')}: 1. argüman ${arg === null ? '<b>yok</b>, varsayılan ' + D + ' kullanılır' : 'verildi (' + arg + ')'}. Her çağrı ekrana yazar, koşul (${C(cond + ' ' + Lm)}) doğruysa ${C('$0')} ile <b>kendini</b> yeni değerle tekrar çalıştırır. Koşul yanlış olunca zincir durur.`,
+      };
+    }
+    const n = R.int(2, 3);
+    script = `n=\${1:-3}\necho "n=$n"\nif [ "$n" -gt 0 ]; then\n    bash "$0" $((n - 1))\nfi\necho "bitti $n"`;
+    for (let i = n; i >= 0; i--) lines.push(`n=${i}`);
+    for (let i = 0; i <= n; i++) lines.push(`bitti ${i}`);
+    const a1 = []; for (let i = n; i >= 0; i--) { a1.push(`n=${i}`, `bitti ${i}`); }
+    const a2 = []; for (let i = n; i >= 0; i--) a2.push(`n=${i}`); for (let i = n; i >= 0; i--) a2.push(`bitti ${i}`);
+    const a3 = []; for (let i = n; i >= 1; i--) a3.push(`n=${i}`); for (let i = 1; i <= n; i++) a3.push(`bitti ${i}`);
+    return {
+      topic: 'recpar', kind: 'single', context: [{ title: '$>cat geri.sh', text: '#!/bin/bash\n' + script }],
+      prompt: `${C('./geri.sh ' + n)} komutunun çıktısı nedir?`, options: textOptions(lines.join('\n'), [a1.join('\n'), a2.join('\n'), a3.join('\n'), `n=${n}\nbitti ${n}`], 4), optKind: 'out',
+      explain: `Her çağrı önce ${C('n=…')} yazar, sonra kendini ${C('n-1')} ile çağırır ve <b>o çağrı bitene kadar bekler</b>. En içteki çağrı (n=0) önce biter; ${C('bitti')} satırları bu yüzden <b>ters sırada</b> (0, 1, …) gelir. Fonksiyonlardaki çağrı yığını (stack) mantığı.`,
+    };
+  }
+  const names = R.sample(['A', 'B', 'C', 'D'], 3);
+  const sl = R.sample([1, 2, 3, 4], 3);
+  const jobs = names.map((nm, i) => ({ nm, s: sl[i] }));
+  const byTime = jobs.slice().sort((a, b) => a.s - b.s);
+  if (v === 2) {
+    const cmd = jobs.map(j => `( sleep ${j.s}; echo "${j.nm}" ) &`).join(' ') + ' wait; echo "Son"';
+    const ans = byTime.map(j => j.nm).concat('Son').join('\n');
+    return {
+      topic: 'recpar', kind: 'single', prompt: `Aşağıdaki komut satırının çıktısı nedir?<pre class="cmd">$&gt;${esc(cmd)}</pre>`,
+      options: textOptions(ans, [jobs.map(j => j.nm).concat('Son').join('\n'), ['Son'].concat(byTime.map(j => j.nm)).join('\n'), byTime.slice().reverse().map(j => j.nm).concat('Son').join('\n'), ['Son'].concat(jobs.map(j => j.nm)).join('\n')], 4), optKind: 'out',
+      explain: `${C('&')} işleri aynı anda başlatır; her biri kendi ${C('sleep')} süresi bitince yazar. Bu yüzden çıktı <b>bitiş sırasına</b> göredir (${byTime.map(j => j.nm + '=' + j.s + 'sn').join(', ')}). ${C('wait')} hepsini bekler; ${C('"Son"')} en sona kalır.`,
+    };
+  }
+  if (v === 3) {
+    const par = R.chance(.6);
+    const cmd = par ? jobs.map(j => `sleep ${j.s} &`).join(' ') + ' wait' : jobs.map(j => `sleep ${j.s}`).join(' ; ');
+    const mx = Math.max(...sl), sm = sl.reduce((a, b) => a + b, 0);
+    return {
+      topic: 'recpar', kind: 'single', prompt: `Aşağıdaki komut satırı yaklaşık kaç saniyede biter?<pre class="cmd">$&gt;${esc(cmd)}</pre>`,
+      options: textOptions(`${par ? mx : sm} sn`, [`${mx} sn`, `${sm} sn`, `${Math.min(...sl)} sn`, '0 sn', `${sm + 1} sn`], 4), optKind: 'out',
+      explain: par ? `${C('&')} ile işler <b>paralel</b> çalışır; toplam süre <b>en uzun işin</b> süresidir (${mx} sn). ${C('wait')} hepsinin bitmesini bekler.` : `${C(';')} ile işler <b>sırayla</b> çalışır, her biri öncekini bekler; süreler toplanır: ${sl.join(' + ')} = ${sm} sn.`,
+    };
+  }
+  const ids = R.sample([1, 2, 3, 4, 5], 3);
+  const js = ids.map(i => ({ i, s: R.int(1, 4) }));
+  const cmd = `for i in ${ids.join(' ')}; do\n    ( sleep $i; echo "iş $i" > "sonuc_$i.txt" ) &\ndone\nwait\ncat sonuc_*.txt`;
+  const ans = ids.slice().sort((a, b) => a - b).map(i => `iş ${i}`).join('\n');
+  return {
+    topic: 'recpar', kind: 'single', context: [{ title: '$>cat paralel.sh', text: '#!/bin/bash\ncd "$(mktemp -d)" || exit 1\n' + cmd }],
+    prompt: `${C('bash paralel.sh')} çıktısı nedir?`,
+    options: textOptions(ans, [ids.map(i => `iş ${i}`).join('\n'), ids.slice().sort((a, b) => b - a).map(i => `iş ${i}`).join('\n'), '(boş çıktı)', `iş ${ids[0]}`], 4), optKind: 'out',
+    explain: `İşler paralel çalışıp her biri <b>kendi dosyasına</b> yazar. ${C('wait')} hepsini bekler. Sonra ${C('sonuc_*.txt')} deseni dosya adlarını <b>alfabetik</b> sıralar (sonuc_${ids.slice().sort((a, b) => a - b).join(', sonuc_')}). Başlama ya da bitiş sırası burada önemli değildir.`,
+  };
+};
+
+/* ---------- 4. Wildcard ↔ regex ---------- */
+G.wild = () => {
+  const multi = R.chance(.5);
+  if (!multi) {
+    const pats = [
+      { g: 'z*', r: '^z', wrong: ['z*', 'z$', '.z', '^z$', '*z'] },
+      { g: '*.txt', r: '\\.txt$', wrong: ['*.txt', '.txt', 'txt', '^.txt', '\\.txt'] },
+      { g: '?a*', r: '^.a', wrong: ['?a*', '^?a', '.a*', 'a$', '^a'] },
+      { g: '[abc]*', r: '^[abc]', wrong: ['[abc]*', '[abc]', '^abc', 'abc*', '[abc]$'] },
+      { g: '?????', r: '^.....$', wrong: ['?????', '.....', '^.....', '^?????$', '.{5}'] },
+      { g: 'b*.log', r: '^b.*\\.log$', wrong: ['b*.log', '^b*.log$', 'b.*log', '^b.*\\.log', '^b\\.log$'] },
+    ];
+    const P = R.pick(pats);
+    const files = uniq(R.shuffle(['z', 'zoom', 'zebra.txt', 'zzzz', 'ba.txt', 'ha.log', 'xa123', 'apple.txt', 'banana', 'cherry.md', 'notes.txt', 'b.log', 'boot.log', 'blog.log.bak', 'catalog', 'data.txt.bak', 'mytxt', 'kazan', 'atlas', 'radio', 'vazo.log', 'abcde', 'b1.log', 'azbc'])).slice(0, 13);
+    if (!files.some(f => globToRe(P.g).test(f))) files.push(P.g.replace(/\*/g, 'x1').replace(/\?/g, 'q').replace(/\[abc\]/, 'b'));
+    const env = { ls: files, files: {} };
+    const canonical = `ls | grep "${P.r}"`;
+    const exp = norm(run(`ls ${P.g}`, env).out, true);
+    const q = commandQuestion({ env, canonical, pool: P.wrong.map(w => `ls | grep "${w}"`), unordered: true, expected: exp });
+    return {
+      topic: 'wild', kind: 'single', context: [{ title: '$>ls', text: files.slice().sort(cmpBytes).join('  ') }],
+      prompt: `${C('ls ' + P.g)} komutunun listelediği dosyaları <b>aynı şekilde</b> seçen grep komutu hangisidir?`,
+      options: q.options, optKind: 'code', sim: true, unordered: true,
+      explain: `Wildcard → regex çevirisi: ${C('*')} → ${C('.*')}, ${C('?')} → ${C('.')}, gerçek nokta → ${C('\\.')}. Wildcard <b>adın tamamını</b> eşler; regex satırın herhangi bir yerinde eşleşir, bu yüzden ${C('^')} ve ${C('$')} çapalarını kendin eklemelisin. Doğru karşılık: ${C(P.r)}.`,
+    };
+  }
+  const base = R.pick(['rapor', 'yedek', 'not', 'proje']), ext = R.pick(['txt', 'log', 'csv']);
+  const files = R.shuffle([`${base}1.${ext}`, `${base}_ocak.${ext}`, `${base}_ocak.${ext}.bak`, `eski_${base}.${ext}`, `${base}lar.md`, `notlar.${ext === 'txt' ? 'csv' : 'txt'}`, `${base}.${ext}`, `x${base}2.${ext}`]).slice(0, 7);
+  if (!files.includes(`${base}1.${ext}`)) files.push(`${base}1.${ext}`);
+  const env = { ls: files, files: {} };
+  const canonical = `ls ${base}*.${ext}`;
+  const pool = [`ls | grep "^${base}.*\\.${ext}$"`, `find . -maxdepth 1 -name "${base}*.${ext}"`, `ls | grep "${base}*.${ext}"`, `ls | grep -E "^${base}.+${ext}"`, `ls *${base}*.${ext}`, `ls | grep "${base}"`, `ls | grep "\\.${ext}$"`, `ls ${base}*`];
+  const q = commandQuestion({ env, canonical, pool, multi: true, unordered: true });
+  return {
+    topic: 'wild', kind: 'multi', context: [{ title: '$>ls', text: files.slice().sort(cmpBytes).join('  ') }],
+    prompt: `Adı ${C(base)} ile başlayıp ${C('.' + ext)} ile biten dosyaları listeleyen komutlar hangileridir? (Birden fazla doğru olabilir. Her yanlış −2 puan.)`,
+    options: q.options, optKind: 'code', sim: true, unordered: true,
+    explain: `Wildcard'da ${C('*')} "her şey" demektir; regex'te ise <b>önceki karakterin tekrarıdır</b>. Bu yüzden ${C(`grep "${base}*.${ext}"`)} beklenenden farklı eşleşir. Regex karşılığı ${C(`^${base}.*\\.${ext}$`)}: ${C('$')} unutulursa ${C('.bak')} dosyaları da gelir. ${C('find')} çıktısındaki ${C('./')} ön eki aynı dosyayı gösterir.`,
+  };
+};
+
+/* ---------- 5. CSV ---------- */
+const NAMES = ['Ali', 'Burak', 'Cem', 'Deniz', 'Ece', 'Fatma', 'Gizem', 'Hakan', 'Irmak', 'Kerem', 'Leyla', 'Mert', 'Nil', 'Okan', 'Pelin', 'Rana', 'Selin', 'Tolga', 'Umut', 'Volkan', 'Yasemin', 'Zeynep'];
+const PRODS = ['Ajanda', 'Bant', 'Cetvel', 'Defter', 'Etiket', 'Fon', 'Kalem', 'Makas', 'Pergel', 'Silgi', 'Tebesir', 'Zarf'];
+G.csv = () => {
+  const prod = R.chance(.4);
+  const n = 5;
+  let F, header, rows, numCols;
+  if (prod) {
+    F = 'urunler.csv'; header = 'kod,ad,fiyat,stok';
+    const names = R.sample(PRODS, n);
+    const prices = distinct(n, () => R.pick([R.int(2, 9), R.int(10, 99), R.int(100, 450)]));
+    const stocks = distinct(n, () => R.pick([R.int(3, 9), R.int(10, 99), R.int(100, 300)]));
+    rows = names.map((nm, i) => `P0${i + 1},${nm},${prices[i]},${stocks[i]}`);
+    numCols = [{ c: 3, ad: 'fiyat' }, { c: 4, ad: 'stok' }];
+  } else {
+    F = R.pick(['students.csv', 'notlar.csv']); header = 'no,ad,not';
+    const names = R.sample(NAMES, n);
+    const ns = distinct(n - 2, () => R.int(12, 99)).concat([100, R.int(3, 9)]);
+    const sh = R.shuffle(ns);
+    rows = names.map((nm, i) => `${101 + i},${nm},${sh[i]}`);
+    numCols = [{ c: 3, ad: 'not' }];
+  }
+  // satırları karıştır ki ilk sütun sırası ad sırasıyla aynı olmasın
+  rows = R.shuffle(rows);
+  const env = { files: { [F]: rows } };
+  const v = R.int(0, 3); const col = R.pick(numCols);
+  let canonical, pool, prompt, exp;
+  if (v === 0) {
+    canonical = `cut -d',' -f${col.c} ${F} | sort -nr | head -n 1`;
+    pool = [`cut -d',' -f${col.c} ${F} | sort -n | head -n 1`, `cut -f${col.c} ${F} | sort -nr | head -n 1`, `cut -d',' -f${col.c} ${F} | head -n 1 | sort -nr`, `cut -d',' -f${col.c} ${F} | sort -r | head -n 1`, `sort -nr ${F} | head -n 1 | cut -d',' -f${col.c}`, `cut -d',' -f${col.c} ${F} | sort -nr | tail -n 1`];
+    prompt = `${C(F)} dosyasındaki <b>en yüksek ${col.ad}</b> değerini yazan komut hangisidir?`;
+    exp = `${C(`cut -d',' -f${col.c}`)} ${col.c}. sütunu (${col.ad}) keser, ${C('sort -nr')} sayısal olarak büyükten küçüğe sıralar, ${C('head -n 1')} ilkini alır. ${C('-d')} verilmezse ayraç TAB olur ve satırın tamamı gelir. ${C('-n')} olmadan sıralama metinseldir: "9" > "100".`;
+  } else if (v === 1) {
+    canonical = `cut -d',' -f${col.c} ${F} | sort -n | head -n 2`;
+    pool = [`cut -d',' -f${col.c} ${F} | sort | head -n 2`, `cut -d',' -f${col.c} ${F} | sort -nr | head -n 2`, `cut -d',' -f${col.c} ${F} | sort -n | tail -n 2`, `cut -d',' -f1 ${F} | sort -n | head -n 2`, `sort -n ${F} | head -n 2 | cut -d',' -f${col.c}`, `cut -f${col.c} ${F} | sort -n | head -n 2`];
+    prompt = `${C(F)} dosyasındaki <b>en düşük 2 ${col.ad}</b> değerini küçükten büyüğe yazan komut hangisidir?`;
+    exp = `Sayı sıralıyorsan ${C('-n')} şart. ${C('sort')} tek başına metin olarak sıralar: "100" < "25" < "9" (karakter karakter karşılaştırır). ${C('sort -n')} küçükten büyüğe, ${C('head -n 2')} ilk ikisi.`;
+  } else if (v === 2) {
+    canonical = `cut -d',' -f2 ${F} | sort -r`;
+    pool = [`cut -d',' -f2 ${F} | sort`, `cut -f2 ${F} | sort -r`, `sort -r ${F} | cut -d',' -f2`, `cut -d',' -f2 ${F} | head -n 3 | sort -r`, `cut -d',' -f2 ${F} | sort -r | head -n 1`, `cut -d',' -f1 ${F} | sort -r`];
+    prompt = `${C(F)} dosyasındaki <b>adları</b> ters alfabetik sırada (Z→A) listeleyen komut hangisidir?`;
+    exp = `Önce 2. sütunu kes (${C("cut -d',' -f2")}), sonra ${C('sort -r')}. ${C('sort -r ' + F + ' | cut …')} satırları <b>1. sütuna</b> göre sıralar, adlara göre değil.`;
+  } else {
+    canonical = `cut -d',' -f${col.c} ${F} | sort -nr`;
+    pool = [`cut -d',' -f${col.c} ${F} | sort -r`, `cut -d',' -f${col.c} ${F} | sort -n`, `cut -f${col.c} ${F} | sort -nr`, `sort -nr ${F} | cut -d',' -f${col.c}`, `cut -d',' -f${col.c} ${F} | sort`, `cut -c${col.c} ${F} | sort -nr`];
+    prompt = `${C(F)} dosyasındaki <b>${col.ad}</b> sütununu büyükten küçüğe sıralayan komut hangisidir?`;
+    exp = `${C('sort -nr')}: sayısal (n) + ters (r). ${C('sort -r')} metinsel ters sıralar ("9" "100"den önce gelir). ${C('cut -c' + col.c)} karakter konumuna göre keser, sütuna göre değil.`;
+  }
+  const q = commandQuestion({ env, canonical, pool });
+  return { topic: 'csv', kind: 'single', context: [{ title: `$>cat ${F}     # ${header}`, text: rows.join('\n') }], prompt, options: q.options, optKind: 'code', sim: true, explain: exp };
+};
+
+/* ---------- 6. Regex ---------- */
+G.regex = () => {
+  const v = R.int(0, 3);
+  let F, lines, canonical, pool, prompt, exp, unordered = false;
+  if (v === 0) {
+    F = 'log.txt';
+    lines = R.shuffle([`2025-11-${R.int(10, 28)} 10:00:01 INFO servis başladı`, `2026-0${R.int(1, 9)}-0${R.int(1, 9)} 09:12:44 error disk dolu`, `25-11-27 eski format kayıt`, `rapor - son - hali`, `2025/11/27 slash ile tarih`, `uyarı: ${R.int(1000, 9999)}-${R.int(10, 99)}-${R.int(10, 99)} numaralı iş`, `2026-1-5 eksik basamak`]);
+    canonical = `grep "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" ${F}`;
+    pool = [`grep -E "[0-9]{4}-[0-9]{2}-[0-9]{2}" ${F}`, `egrep "[0-9]{4}-[0-9]{2}-[0-9]{2}" ${F}`, `grep "[0-9]{4}-[0-9]{2}-[0-9]{2}" ${F}`, `grep -E "[0-9]+-[0-9]+-[0-9]+" ${F}`, `grep "[0-9]*-[0-9]*-[0-9]*" ${F}`, `grep -E "[0-9]{4}/[0-9]{2}/[0-9]{2}" ${F}`, `grep -E "[0-9]{2}-[0-9]{2}-[0-9]{2}" ${F}`];
+    prompt = `${C(F)} dosyasında ${C('YYYY-AA-GG')} biçiminde tarih içeren satırları bulan komutlar hangileridir? (Birden fazla doğru olabilir.)`;
+    exp = `Üç doğru yazım: açık açık ${C('[0-9][0-9][0-9][0-9]-…')}, ${C('grep -E "[0-9]{4}-…"')} ve ${C('egrep')} (= grep -E). ${C('{4}')} gibi tekrarlar <b>-E olmadan çalışmaz</b>; temel regex'te ${C('{')} düz karakterdir. ${C('[0-9]*')} sıfır rakama izin verdiği için "rapor - son - hali" bile eşleşir. Gerçek tarihte 4 haneli yılın önünde başka rakam olmaması gerekir; burada "uyarı: 1234-56-78" gibi satırlar da biçime uyar.`;
+  } else if (v === 1) {
+    F = 'calls.log';
+    const ph = () => `0-5${R.int(0, 5)}${R.int(0, 9)}-${R.int(100, 999)}-${R.int(1000, 9999)}`;
+    lines = R.shuffle([`Ali ${ph()} aradı`, `Ayşe ${ph()} mesaj`, `Can 05${R.int(30, 55)}${R.int(1000000, 9999999)} bitişik`, `Ece 0-212-${R.int(100, 999)}-${R.int(1000, 9999)} sabit hat`, `Mert 0-5${R.int(30, 55)}-${R.int(10, 99)}-${R.int(1000, 9999)} eksik`, `santral 0 - 5 3 2 boşluklu`]);
+    canonical = `grep "0-5[0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]" ${F}`;
+    pool = [`grep -E "0-5[0-9]{2}-[0-9]{3}-[0-9]{4}" ${F}`, `egrep "0-5[0-9]{2}-[0-9]{3}-[0-9]{4}" ${F}`, `grep "0-5[0-9]{2}-[0-9]{3}-[0-9]{4}" ${F}`, `grep -E "0-[0-9]+-[0-9]+-[0-9]+" ${F}`, `grep -E "0-5[0-9]+-[0-9]+-[0-9]+" ${F}`, `grep "05[0-9][0-9][0-9]" ${F}`];
+    prompt = `${C(F)} dosyasında ${C('0-5XX-XXX-XXXX')} biçiminde cep telefonu içeren satırları bulan komutlar hangileridir? (Geçen yılın 6. sorusunun çoktan seçmeli hâli.)`;
+    exp = `Her X bir rakam: ${C('[0-9]')}. Kısa yazım ${C('[0-9]{3}')} ama sadece ${C('-E')} ya da ${C('egrep')} ile çalışır. ${C('[0-9]+')} "en az bir rakam" dediği için uzunluğu kontrol etmez; sabit hattı ya da eksik numarayı da yakalar.`;
+  } else if (v === 2) {
+    F = 'network.log';
+    const ip = () => `${R.pick([10, 192, 172, 85, 8])}.${R.int(0, 255)}.${R.int(0, 255)}.${R.int(1, 254)}`;
+    lines = R.shuffle([`bağlantı: ${ip()} -> ${ip()}`, `DHCP adresi alındı ${ip()}`, `sürüm 10-20-30-40 yüklendi`, `hata: hedef yok`, `paket v2.10.3 kuruldu`]);
+    canonical = `grep -oE "([0-9]{1,3}\\.){3}[0-9]{1,3}" ${F}`;
+    pool = [`grep -oE "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}" ${F}`, `grep -oE "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+" ${F}`, `grep -oE "([0-9]{1,3}.){3}[0-9]{1,3}" ${F}`, `grep -E "([0-9]{1,3}\\.){3}[0-9]{1,3}" ${F}`, `grep -o "([0-9]{1,3}\\.){3}[0-9]{1,3}" ${F}`, `grep -oE "[0-9]+\\.[0-9]+\\.[0-9]+" ${F}`];
+    prompt = `${C(F)} dosyasındaki IPv4 adreslerini, satırın tamamını değil <b>sadece adres olarak</b> çeken komutlar hangileridir?`;
+    exp = `${C('-o')} sadece eşleşen parçayı basar; ${C('-o')} yoksa satırın tamamı gelir. Nokta ${C('\\.')} ile kaçırılmalı: kaçırılmayan ${C('.')} herhangi bir karakterdir ve "10-20-30-40" gibi metinleri de yakalar. ${C('( ){3}')} gruplama da ${C('-E')} ister.`;
+  } else {
+    F = 'ogrenciler.txt';
+    const no = () => `2${R.int(10, 39)}${R.int(100000, 999999)}`;
+    lines = R.shuffle([`${no()} Ali Kaya`, `${no()} Ece Demir`, `1${R.int(10000000, 99999999)} eski kayıt`, `2${R.int(1000000, 9999999)} eksik numara`, `tel: 2${R.int(100000000, 999999999)}0 hatalı`, `numara yok Deniz`]);
+    canonical = `grep -E "^2[0-9]{8} " ${F}`;
+    pool = [`grep "^2[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] " ${F}`, `egrep "^2[0-9]{8} " ${F}`, `grep -E "2[0-9]{8}" ${F}`, `grep "^2[0-9]{8} " ${F}`, `grep -E "^[0-9]+ " ${F}`, `grep -E "^2[0-9]* " ${F}`];
+    prompt = `${C(F)} dosyasında <b>satır başında</b> 2 ile başlayan <b>9 haneli</b> öğrenci numarası (ardından boşluk) olan satırları bulan komutlar hangileridir?`;
+    exp = `${C('^')} satır başı, ${C('2')} sabit, ${C('[0-9]{8}')} 8 rakam daha, sondaki boşluk numaranın bittiğini garanti eder. ${C('^')} olmazsa satırın ortasındaki uzun sayılar da eşleşir; boşluk olmazsa 10 haneli sayılar da eşleşir.`;
+  }
+  const env = { files: { [F]: lines } };
+  const q = commandQuestion({ env, canonical, pool, multi: true, unordered });
+  return { topic: 'regex', kind: 'multi', context: [{ title: `$>cat ${F}`, text: lines.join('\n') }], prompt: prompt + ' (Her yanlış −2 puan.)', options: q.options, optKind: 'code', sim: true, explain: exp };
+};
+
+/* ---------- 9. /etc/passwd ---------- */
+G.passwd = () => {
+  const humans = R.sample(['ali', 'ayse', 'mehmet', 'zeynep', 'elif', 'selin', 'kerem', 'deniz', 'burak'], 3);
+  const full = { ali: 'Ali Kaya', ayse: 'Ayşe Demir', mehmet: 'Mehmet Yıldız', zeynep: 'Zeynep Su', elif: 'Elif Ak', selin: 'Selin Öz', kerem: 'Kerem Can,,,', deniz: 'Deniz Er', burak: 'Burak Şen' };
+  const trapIdx = R.int(0, 2), trapHome = { ali: 'akaya', ayse: 'ademir', mehmet: 'myildiz', zeynep: 'zsu', elif: 'eak', selin: 'soz', kerem: 'kcan', deniz: 'der', burak: 'bsen' };
+  const shells = R.shuffle(['/bin/bash', '/bin/bash', '/bin/zsh']);
+  const sys = R.shuffle([
+    'daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin', 'bin:x:2:2:bin:/bin:/usr/sbin/nologin', 'www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin',
+    'sshd:x:110:65534::/run/sshd:/usr/sbin/nologin', 'mysql:x:115:120:MySQL Server,,,:/nonexistent:/bin/false', 'syslog:x:102:102::/nonexistent:/usr/sbin/nologin',
+  ]).slice(0, 4);
+  const hs = humans.map((u, i) => `${u}:x:${1000 + i}:${1000 + i}:${full[u]}:/home/${i === trapIdx ? trapHome[u] : u}:${shells[i]}`);
+  const lines = ['root:x:0:0:root:/root:/bin/bash'].concat(R.shuffle(sys.concat(hs)));
+  const env = { files: { '/etc/passwd': lines } };
+  const P = '/etc/passwd';
+  const v = R.int(0, 3);
+  let canonical, pool, prompt, exp;
+  if (v === 0) {
+    canonical = `grep "bash$" ${P} | cut -d: -f1`;
+    pool = [`cut -d: -f1,7 ${P} | grep "bash$" | cut -d: -f1`, `cat ${P} | grep -E "/bin/bash$" | cut -d':' -f1`, `cut -d: -f1 ${P} | grep "bash$"`, `grep "bash" ${P} | cut -d: -f5`, `grep "^bash" ${P} | cut -d: -f1`, `grep "bash$" ${P} | cut -d: -f6`, `cut -d: -f7 ${P} | grep "bash"`];
+    prompt = `Varsayılan shell'i ${C('/bin/bash')} olan kullanıcıların <b>kullanıcı adlarını</b> (username) yazdıran komutlar hangileridir?`;
+    exp = `Alanlar: 1 kullanıcı adı · 3 UID · 5 gerçek ad · 6 ev dizini · 7 shell. Önce bash ile biten satırları seç, sonra 1. alanı kes. Önce ${C('-f1')} kesersen shell bilgisi kaybolur. ${C('-f5')} gerçek adı (name) verir, username değil.`;
+  } else if (v === 1) {
+    canonical = `grep ":/home/" ${P} | cut -d: -f1`;
+    pool = [`cut -d: -f1,6 ${P} | grep "/home" | cut -d: -f1`, `cat ${P} | grep "/home/" | cut -d':' -f1`, `grep "home" ${P} | cut -d: -f5`, `cut -d: -f6 ${P} | grep "^/home" | cut -d/ -f3`, `grep "^/home" ${P} | cut -d: -f1`, `cut -d: -f6 ${P} | grep "/home"`];
+    prompt = `Ev dizini ${C('/home')} altında olan kullanıcıların <b>kullanıcı adlarını</b> yazdıran komutlar hangileridir?`;
+    exp = `Ev dizininin adı kullanıcı adıyla <b>aynı olmak zorunda değildir</b>: ${C(humans[trapIdx])} kullanıcısının dizini ${C('/home/' + trapHome[humans[trapIdx]])}. Bu yüzden ${C('-f6 | cut -d/ -f3')} yanlış sonuç verir (geçen yılın tuzağı). Kullanıcı adı her zaman 1. alandır.`;
+  } else if (v === 2) {
+    canonical = `grep -c "nologin$" ${P}`;
+    pool = [`grep "nologin" ${P} | wc -l`, `cut -d: -f7 ${P} | grep -c "nologin"`, `cut -d: -f1 ${P} | grep -c "nologin"`, `wc -l nologin ${P}`, `grep -c "false$" ${P}`, `grep -v -c "nologin" ${P}`];
+    prompt = `Shell'i ${C('nologin')} olan hesapların <b>sayısını</b> veren komutlar hangileridir?`;
+    exp = `${C('grep -c')} ile ${C('grep … | wc -l')} aynı sayıyı verir. 7. alanı kesip saymak da doğrudur. 1. alanda (kullanıcı adı) nologin geçmez; ${C('wc -l nologin …')} "nologin" adlı bir dosya arar.`;
+  } else {
+    canonical = `cut -d: -f1 ${P}`;
+    pool = [`grep ":" ${P} | cut -d ':' -f 1`, `cat ${P} | cut -d':' -f1`, `cat ${P} | cut -d ':' -f 5`, `cut -d ':' -f 6 ${P} | cut -d '/' -f 3`, `cut -c1-8 ${P}`, `cut -d: -f3 ${P}`];
+    prompt = `Sistemde tanımlı <b>kullanıcı adlarını</b> (username, gerçek ad değil) yazdıran komutlar hangileridir? (Geçen yılın 9. sorusu tipi.)`;
+    exp = `Kullanıcı adı ${C(':')} ile ayrılmış <b>1. alandır</b>. ${C('grep ":"')} her satırı seçer (hepsinde : var), ${C('more')} ve ${C('cat')} dosyayı aynen aktarır. ${C('-f5')} gerçek ad, ${C('-f3')} UID'dir. ${C('cut -c1-8')} karakter keser; "root:x:0" gibi parçalar çıkar.`;
+  }
+  const q = commandQuestion({ env, canonical, pool, multi: true });
+  return { topic: 'passwd', kind: 'multi', context: [{ title: '$>cat /etc/passwd', text: lines.join('\n') }], prompt: prompt + ' (Birden fazla doğru olabilir. Her yanlış −2 puan.)', options: q.options, optKind: 'code', sim: true, explain: exp };
+};
+
+/* ---------- 10. find ---------- */
+G.find = () => {
+  const v = R.int(0, 1);
+  if (v === 0) {
+    const D = R.pick(['/var/log', '/etc', '$HOME', '/opt/proje']), ext = R.pick(['log', 'conf', 'sh', 'txt']), N = R.int(1, 9), M = R.pick([1, 5, 10, 50, 100]);
+    const newer = R.chance(.6), big = R.chance(.6);
+    const mt = (newer ? '-' : '+') + N, sz = (big ? '+' : '-') + M + 'M';
+    const cor = `find ${D} -type f -name "*.${ext}" -mtime ${mt} -size ${sz} | wc -l`;
+    const flipM = (newer ? '+' : '-') + N, flipS = (big ? '-' : '+') + M + 'M';
+    const ds = [
+      `find ${D} -type f -name "*.${ext}" -mtime ${flipM} -size ${sz} | wc -l`,
+      `find ${D} -type f -name "*.${ext}" -mtime ${mt} -size ${flipS} | wc -l`,
+      `find . -type f -name "*.${ext}" -mtime ${mt} -size ${sz} | wc -l`,
+      `find ${D} -type d -name "*.${ext}" -mtime ${mt} -size ${sz} | wc -l`,
+      `ls ${D}/*.${ext} -mtime ${mt} | wc -l`,
+      `find ${D} -type f -name "*.${ext}" -mtime ${mt} -size ${sz}`,
+      `grep -c "*.${ext}" ${D}`,
+    ];
+    return {
+      topic: 'find', kind: 'single',
+      prompt: `Çalışma dizini neresi olursa olsun, ${C(D)} altında (alt dizinler dahil) <b>${newer ? `son ${N} gün içinde` : `${N} günden daha önce`}</b> değişmiş ve <b>${M} MB'tan ${big ? 'büyük' : 'küçük'}</b> ${C('.' + ext)} dosyalarının <b>sayısını</b> veren komut hangisidir?`,
+      options: textOptions(cor, ds, 5), optKind: 'code',
+      explain: `${C('-mtime -N')} son N gün (daha yeni), ${C('-mtime +N')} N günden eski. ${C('-size +NM')} büyük, ${C('-size -NM')} küçük. ${C('-type f')} dosya, ${C('d')} dizin. ${C('find .')} bulunduğun dizinde arar. Sayı istendiği için ${C('| wc -l')} şart. ${C('ls')} alt dizinlere inmez ve ${C('-mtime')} onun parametresi değildir.`,
+    };
+  }
+  const D = R.pick(['/tmp', '$HOME/indirilenler']), ext = R.pick(['tmp', 'bak', 'old']), N = R.int(3, 30);
+  const cor = `find ${D} -type f -name "*.${ext}" -mtime +${N} -delete`;
+  return {
+    topic: 'find', kind: 'single',
+    prompt: `${C(D)} altındaki (alt dizinler dahil) <b>${N} günden eski</b> ${C('.' + ext)} dosyalarını <b>silen</b> komut hangisidir?`,
+    options: textOptions(cor, [`find ${D} -type f -name "*.${ext}" -mtime -${N} -delete`, `find ${D} -type f -name "*.${ext}" -mtime +${N}`, `rm ${D}/*.${ext}`, `find ${D} -type d -name "*.${ext}" -mtime +${N} -delete`, `find ${D} -type f -name "*.${ext}" -mtime +${N} | wc -l`], 5), optKind: 'code',
+    explain: `${C('-mtime +' + N)} = ${N} günden eski. ${C('-delete')} bulunanları siler; bu olmadan find sadece listeler. ${C('rm ' + D + '/*.' + ext)} hem alt dizinlere inmez hem de yaşa bakmaz.`,
+  };
+};
+
+/* ---------- 11. top: çoklu doğru ---------- */
+G.topmulti = () => {
+  const T = genTop(8);
+  const env = { top: T.lines, files: {} };
+  const v = R.int(0, 3); const K = R.int(3, 6);
+  const cuts = { pid: ['cut -c1-7', "PID'lerini"], cmd: ['cut -c72-', 'program adlarını (COMMAND, 72. karakterden itibaren)'], pc: ['cut -c1-7,49-54', 'PID ve %CPU değerlerini birlikte'] };
+  let canonical, pool, prompt, exp;
+  if (v < 3) {
+    const key = ['pid', 'cmd', 'pc'][v]; const [Cc, what] = cuts[key];
+    canonical = `top -b -n1 | tail -n +8 | head -n ${K} | ${Cc}`;
+    pool = [`top -b -n1 | ${Cc} | tail -n +8 | head -n ${K}`, `top -b -n1 | tail -n +8 | ${Cc} | head -n ${K}`, `top -b -n1 | head -n ${7 + K} | tail -n ${K} | ${Cc}`, `top -b -n1 | grep -E "^ *[0-9]" | head -n ${K} | ${Cc}`,
+      `top -b -n1 | head -n ${K} | tail -n +8 | ${Cc}`, `top -b -n1 | ${Cc} | head -n ${K} | tail -n +8`, `top -b -n1 | tail -n ${K} | ${Cc}`, `top -b -n1 | head -n ${K} | ${Cc}`, `top -b -n1 | tail -n +7 | head -n ${K} | ${Cc}`, `top -b -n1 | head -n ${6 + K} | tail -n ${K} | ${Cc}`, `top -b -n1 | tail -n +8 | sort -k9 -n | head -n ${K} | ${Cc}`];
+    prompt = `Anlık olarak en çok CPU kullanan <b>${K} sürecin ${what}</b> yazdıran komut hangisi/hangileridir? (top çıktısı %CPU'ya göre sıralıdır, sütun genişlikleri sabittir.)`;
+    exp = `İlk 7 satır başlıktır: süreçler ${C('tail -n +8')} ile başlar. ${C('cut')} <b>satır sayısını değiştirmez</b>, bu yüzden nerede olduğu önemli değildir. ${C(`head -n ${7 + K} | tail -n ${K}`)} de 8–${7 + K}. satırları verir. ${C(`head -n ${K} | tail -n +8`)} ise ${K} satırın 8.sini arar ve boş döner.`;
+  } else {
+    canonical = `top -b -n1 | tail -n +8 | sort -k10 -nr | head -n ${K} | cut -c1-7`;
+    pool = [`top -b -n1 | tail -n +8 | sort -k10 -nr | cut -c1-7 | head -n ${K}`, `top -b -n1 | grep -E "^ *[0-9]" | sort -k10 -nr | head -n ${K} | cut -c1-7`, `top -b -n1 | tail -n +8 | head -n ${K} | cut -c1-7`, `top -b -n1 | tail -n +8 | sort -k9 -nr | head -n ${K} | cut -c1-7`, `top -b -n1 | tail -n +8 | sort -k10 -n | head -n ${K} | cut -c1-7`, `top -b -n1 | sort -k10 -nr | head -n ${K} | cut -c1-7`, `top -b -n1 | tail -n +8 | head -n ${K} | sort -k10 -nr | cut -c1-7`];
+    prompt = `Anlık olarak en çok <b>RAM</b> kullanan <b>${K} sürecin PID'lerini</b> yazdıran komut hangisi/hangileridir? (%MEM 10. sütundur.)`;
+    exp = `top <b>%CPU'ya</b> göre sıralıdır; RAM için ${C('sort -k10 -nr')} (10. sütun, sayısal, büyükten küçüğe) şarttır. ${C('tail -n +8')} olmadan başlık satırları da sıralanır ("MiB Mem" satırının 10. alanı büyük bir sayıdır!). Önce ${C('head')} alınırsa sadece en çok CPU kullananlar arasında sıralanır.`;
+  }
+  const q = commandQuestion({ env, canonical, pool, multi: true });
+  return { topic: 'top', kind: 'multi', context: [{ title: '$>top -b -n1', text: T.lines.join('\n') }], prompt: prompt + ' (Birden fazla doğru olabilir. Her yanlış −2 puan.)', options: q.options, optKind: 'code', sim: true, explain: exp };
+};
+
+/* ---------- 8. top: boşluk doldurma ---------- */
+function sumTenths(arr) { return arr.reduce((a, b) => a + b, 0); }
+G.topfill = () => {
+  const T = genTop(8);
+  const v = R.int(0, 2); const K = R.int(3, 5);
+  const byMem = T.procs.slice().sort((a, b) => b.mem - a.mem);
+  let code, blanks, result, exp, prompt;
+  const tailB = { opts: ['-n +8', '-n 8', '-n +7', '-n -8'], a: '-n +8' };
+  const headB = { opts: [`-n ${K}`, `-n ${K + 1}`, `-n -${K}`, `-n +${K}`], a: `-n ${K}` };
+  if (v === 0 || v === 2) {
+    const s = sumTenths(T.procs.slice(0, K).map(p => p.cpu));
+    const cutB = { opts: ['-c50-54', '-c56-60', '-c1-7', '-c72-'], a: '-c50-54' };
+    blanks = [tailB, headB, cutB];
+    if (v === 0) {
+      code = `sum=0\nwhile read val; do\n    sum=$(echo "$sum + $val" | bc)\ndone < <(top -b -n1 | tail {{0}} | head {{1}} | cut {{2}} )\necho $sum`;
+      result = { q: 'Betik ilk sayfadaki çıktıya göre ne yazar?', opts: [f1(s), f1(s + T.procs[K].cpu), f1(sumTenths(T.procs.slice(0, K).map(p => p.mem))), f1(s - T.procs[K - 1].cpu), f1(sumTenths(byMem.slice(0, K).map(p => p.cpu)))], a: f1(s) };
+      prompt = `Anlık olarak <b>en çok CPU kullanan ${K} sürecin</b> toplam %CPU değerini hesaplayan betikteki boşlukları doldurunuz. (%CPU 50–54. karakterlerdedir.)`;
+      exp = `${C('tail -n +8')} süreç satırlarına geçer, ${C('head -n ' + K)} ilk ${K} süreci alır (top zaten %CPU'ya göre sıralı), ${C('cut -c50-54')} %CPU sütununu keser. Toplam: ${T.procs.slice(0, K).map(p => f1(p.cpu)).join(' + ')} = <b>${f1(s)}</b>.`;
+    } else {
+      const avg = bcDiv(s, 10 * K, 2);
+      blanks.push({ opts: [String(K), String(K + 1), '$sum', '10'], a: String(K) });
+      code = `sum=0\nwhile read val; do\n    sum=$(echo "$sum + $val" | bc)\ndone < <(top -b -n1 | tail {{0}} | head {{1}} | cut {{2}} )\necho "scale=2; $sum / {{3}}" | bc`;
+      result = { q: 'Betik ilk sayfadaki çıktıya göre ne yazar?', opts: [avg, (s / 10 / K).toFixed(2), f1(s), bcDiv(s, 10 * (K + 1), 2), bcDiv(s, 10 * K, 1)], a: avg };
+      prompt = `Anlık olarak <b>en çok CPU kullanan ${K} sürecin ortalama %CPU</b> değerini (2 basamak) hesaplayan betikteki boşlukları doldurunuz.`;
+      exp = `Toplam ${f1(s)}, ${K}'ya bölünür. ${C('bc')} ${C('scale=2')} ile 2 basamakta <b>keser</b> (yuvarlamaz): ${f1(s)} / ${K} = ${(s / 10 / K).toFixed(4)}… → <b>${avg}</b>.`;
+    }
+  } else {
+    const s = sumTenths(byMem.slice(0, K).map(p => p.mem));
+    blanks = [tailB, { opts: ['-k10 -nr', '-k10 -n', '-k9 -nr', '-nr'], a: '-k10 -nr' }, headB, { opts: ['-c56-60', '-c50-54', '-c1-7', '-c62-70'], a: '-c56-60' }];
+    code = `sum=0\nwhile read val; do\n    sum=$(echo "$sum + $val" | bc)\ndone < <(top -b -n1 | tail {{0}} | sort {{1}} | head {{2}} | cut {{3}} )\necho $sum`;
+    result = { q: 'Betik ilk sayfadaki çıktıya göre ne yazar?', opts: [f1(s), f1(sumTenths(T.procs.slice(0, K).map(p => p.mem))), f1(sumTenths(byMem.slice(0, K).map(p => p.cpu))), f1(s + byMem[K].mem), f1(s - byMem[K - 1].mem)], a: f1(s) };
+    prompt = `Anlık olarak <b>en çok RAM kullanan ${K} sürecin</b> toplam %MEM değerini hesaplayan betikteki boşlukları doldurunuz. (%MEM 10. sütundur ve 56–60. karakterlerdedir.)`;
+    exp = `top %CPU'ya göre sıralıdır; RAM için önce ${C('sort -k10 -nr')} gerekir. En büyük ${K} %MEM: ${byMem.slice(0, K).map(p => f1(p.mem) + ' (' + p.cmd + ')').join(' + ')} = <b>${f1(s)}</b>.`;
+  }
+  result.opts = uniq(result.opts);
+  return finishBlanks({ topic: 'top', context: [{ title: '$>top -b -n1', text: T.lines.join('\n') }], prompt, code, blanks, followups: [result], explain: exp });
+};
+function finishBlanks(q) {
+  q.kind = 'blanks';
+  q.blanks = q.blanks.map(b => { const opts = R.shuffle(uniq(b.opts)); return { opts, a: opts.indexOf(b.a) }; });
+  q.followups = (q.followups || []).map(f => { const opts = R.shuffle(uniq(f.opts.map(String))); return { q: f.q, opts, a: opts.indexOf(String(f.a)), pre: f.pre }; });
+  q.blanks.forEach(b => { if (b.a < 0) throw new Error('blank cevap yok'); });
+  q.followups.forEach(f => { if (f.a < 0 || f.opts.length < 3) throw new Error('followup sorunlu'); });
+  return q;
+}
+
+/* ---------- 7. Script tamamlama (20 puan) ---------- */
+G.script = () => {
+  const v = R.int(0, 3);
+  if (v === 0) {
+    const sh = R.chance(.5);
+    const code = `#!/bin/bash\ni=1\ntotal=0\nwhile true; do\n    dir=$(echo "$PATH" | cut {{0}})\n    [ {{1}} "$dir" ] && break\n    if [ {{2}} "$dir" ]; then\n        count=$(ls -1 "$dir" 2>/dev/null | {{3}})\n        echo "$dir : $count"\n        total={{4}}\n    fi\n    i=$((i + 1))\ndone\necho "Toplam: $total"`;
+    return finishBlanks({
+      topic: 'script', prompt: `${C('$PATH')} değişkenindeki her dizinde ${sh ? 'adı <b>sh ile biten</b> komutların' : '<b>kaç komut</b> bulunduğunu'} sayısını, en sonda da toplamı yazan betiği tamamlayınız. (Geçen yılın 20 puanlık sorusunun kardeşi.)`,
+      context: [{ title: '$>echo $PATH', text: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin' }], code,
+      blanks: [{ opts: ['-d: -f$i', '-d: -f1', '-d/ -f$i', '-c$i'], a: '-d: -f$i' }, { opts: ['-z', '-n', '-d', '-f'], a: '-z' }, { opts: ['-d', '-f', '-z', '! -d'], a: '-d' },
+        sh ? { opts: ['grep -c "sh$"', 'grep "sh$"', 'grep -c "^sh"', 'wc -l'], a: 'grep -c "sh$"' } : { opts: ['wc -l', 'wc -w', 'head -n 1', 'grep -c "$"x'], a: 'wc -l' },
+        { opts: ['$((total + count))', '$total + $count', '$(total + count)', '"$total$count"'], a: '$((total + count))' }],
+      explain: `${C('cut -d: -f$i')}: PATH ${C(':')} ile ayrılmıştır, i. dizini alır. Dizinler bitince alan boş gelir: ${C('[ -z "$dir" ] && break')} döngüyü bitirir. ${C('[ -d ]')} var olmayan dizinleri atlar. ${sh ? C('grep -c "sh$"') + ' adı sh ile bitenleri sayar' : C('wc -l') + ' satır = komut sayısı'}. Toplama için ${C('$(( ))')} şart; ${C('$total + $count')} metin birleştirir.`,
+    });
+  }
+  if (v === 1) {
+    const ext = R.pick(['txt', 'log', 'csv']);
+    const code = `#!/bin/bash\ndir={{0}}\nif [ {{1}} "$dir" ]; then\n    echo "Hata: $dir bir dizin değil"\n    {{2}}\nfi\ntotal=0\nfor f in {{3}}; do\n    [ -f "$f" ] || continue\n    n=$({{4}})\n    echo "$f : $n satır"\n    total=$((total + n))\ndone\necho "Toplam: $total satır"`;
+    return finishBlanks({
+      topic: 'script', prompt: `Argüman olarak bir dizin alan (verilmezse bulunduğu dizini kullanan), o dizindeki her ${C('.' + ext)} dosyasının satır sayısını ve toplamı yazan betiği tamamlayınız. Yol dizin değilse betik <b>1 çıkış koduyla</b> sonlanmalıdır.`,
+      context: [{ title: 'Örnek çalışma', text: `$>./say.sh veri\nveri/a.${ext} : 6 satır\nveri/b.${ext} : 5 satır\nToplam: 11 satır` }], code,
+      blanks: [{ opts: ['${1:-.}', '$1', '$0', '${1:-$0}'], a: '${1:-.}' }, { opts: ['! -d', '-d', '! -f', '-z'], a: '! -d' }, { opts: ['exit 1', 'exit 0', 'break', 'continue'], a: 'exit 1' },
+        { opts: [`"$dir"/*.${ext}`, `"$dir/*.${ext}"`, `*.${ext}`, `$dir.${ext}`], a: `"$dir"/*.${ext}` }, { opts: ['wc -l < "$f"', 'wc -l "$f"', 'cat "$f"', 'wc -c < "$f"'], a: 'wc -l < "$f"' }],
+      explain: `${C('${1:-.}')}: argüman yoksa ${C('.')} (bulunduğun dizin). ${C('[ ! -d ]')} "dizin değilse". ${C('exit 1')} hata koduyla çıkar. ${C('"$dir"/*.' + ext)}: yıldız tırnağın <b>dışında</b> olmalı, yoksa joker olarak açılmaz. ${C('wc -l < "$f"')} sadece sayıyı verir; ${C('wc -l "$f"')} dosya adını da yazar ve toplama bozulur.`,
+    });
+  }
+  if (v === 2) {
+    const code = `#!/bin/bash\nif [ {{0}} ]; then\n    echo "Kullanım: $0 yol1 yol2 ..."\n    exit 1\nfi\nfor yol in {{1}}; do\n    if [ {{2}} "$yol" ]; then\n        n=$(ls -1 "$yol" | wc -l)\n        echo "$yol : dizin ($n öğe)"\n    elif [ {{3}} "$yol" ]; then\n        n=$({{4}})\n        echo "$yol : dosya ($n satır)"\n    else\n        echo "$yol : bulunamadı"\n    fi\ndone`;
+    return finishBlanks({
+      topic: 'script', prompt: `Verilen <b>her argüman</b> için: dizinse öğe sayısını, dosyaysa satır sayısını, hiçbiri değilse "bulunamadı" yazan betiği tamamlayınız. Argüman verilmezse kullanım mesajı yazıp 1 ile çıkmalıdır.`,
+      context: [{ title: 'Örnek çalışma', text: '$>./kontrol.sh veri notlar.csv yok\nveri : dizin (12 öğe)\nnotlar.csv : dosya (5 satır)\nyok : bulunamadı' }], code,
+      blanks: [{ opts: ['$# -eq 0', '$1 -eq 0', '$0 -eq 0', '$# -gt 0'], a: '$# -eq 0' }, { opts: ['"$@"', '"$#"', '"$0"', '$1'], a: '"$@"' }, { opts: ['-d', '-f', '-z', '-n'], a: '-d' }, { opts: ['-f', '-d', '-z', '! -f'], a: '-f' }, { opts: ['wc -l < "$yol"', 'wc -l "$yol"', 'ls -1 "$yol" | wc -l', 'cat "$yol"'], a: 'wc -l < "$yol"' }],
+      explain: `${C('$#')} argüman sayısı, ${C('"$@"')} tüm argümanlar (her biri ayrı), ${C('$0')} betiğin adı. Önce ${C('-d')} (dizin mi?), sonra ${C('-f')} (normal dosya mı?) kontrol edilir.`,
+    });
+  }
+  const N = R.int(6, 15), par = R.chance(.5);
+  let s = 0; for (let i = 1; i <= N; i++) if ((i % 2 === 0) === par) s += i;
+  const code = `#!/bin/bash\nn={{0}}\ni=1\ntoplam=0\nwhile [ $i {{1}} $n ]; do\n    if [ {{2}} -eq ${par ? 0 : 1} ]; then\n        toplam={{3}}\n    fi\n    i={{4}}\ndone\necho "Toplam: $toplam"`;
+  let alt = 0; for (let i = 1; i < N; i++) if ((i % 2 === 0) === par) alt += i;
+  return finishBlanks({
+    topic: 'script', prompt: `1'den ${C('n')}'e kadar (n = 1. argüman, verilmezse 10) <b>${par ? 'çift' : 'tek'}</b> sayıların toplamını yazan betiği tamamlayınız.`,
+    code, blanks: [{ opts: ['${1:-10}', '$1', '${10:-1}', '$#'], a: '${1:-10}' }, { opts: ['-le', '-lt', '-ge', '-eq'], a: '-le' }, { opts: ['$((i % 2))', '$((i / 2))', '$i % 2', '$((n % 2))'], a: '$((i % 2))' }, { opts: ['$((toplam + i))', '$toplam + $i', '$((toplam + n))', '$(toplam + i)'], a: '$((toplam + i))' }, { opts: ['$((i + 1))', '$i + 1', 'i+1', '$((i + 2))'], a: '$((i + 1))' }],
+    followups: [{ q: `${C('./topla.sh ' + N)} çıktısı nedir?`, opts: [`Toplam: ${s}`, `Toplam: ${alt}`, `Toplam: ${N * (N + 1) / 2}`, `Toplam: ${s + 1}`], a: `Toplam: ${s}` }],
+    explain: `${C('${1:-10}')} varsayılan değer. ${C('-le')} "küçük eşit": n de dahil edilmeli. ${C('$((i % 2))')} kalan; 0 ise çift. Sayaç ${C('$((i + 1))')} ile artmazsa döngü sonsuza kadar sürer. ${N} için sonuç: <b>${s}</b>.`,
+  });
+};
+
+/* ---------- 12. Klasik boşluk doldurma ---------- */
+function lsSorted(names) { return names.slice().sort(cmpBytes); }
+function treeLines(root, groups, childFn, deep) {
+  const L = [root + '/'];
+  groups.forEach((g, gi) => {
+    L.push(`  ${g.dir}/`);
+    const items = g.items;
+    const show = items.length <= 3 ? items : [items[0], items[1], '…', items[items.length - 1]];
+    show.forEach(it => {
+      if (it === '…') { L.push('       .'); L.push('       .'); return; }
+      L.push(`    ${it}`); if (deep) L.push(`      ${deep}`);
+    });
+  });
+  return L.join('\n');
+}
+G.classic = () => {
+  const v = R.int(0, 4);
+  let q;
+  if (v === 0) { // blok/daire
+    const bl = R.sample(['A', 'B', 'C', 'D', 'E', 'F'], R.int(3, 4)).sort();
+    const cnt = bl.map(() => R.int(4, 14));
+    const groups = bl.map((b, i) => ({ dir: `${b}_Blok`, items: Array.from({ length: cnt[i] }, (_, k) => `daire${k + 1}.txt`) }));
+    const tot = cnt.reduce((a, b) => a + b, 0);
+    const gi = cnt.findIndex(c => c >= 10) >= 0 ? cnt.findIndex(c => c >= 10) : 0;
+    const lastName = lsSorted(groups[gi].items).slice(-1)[0];
+    q = {
+      prompt: 'Bir sitedeki her blok için klasör, her blok klasörünün içine o bloktaki daire sayısı kadar daire dosyası oluşturan betikteki boşlukları doldurunuz. Klasör görünümü soldaki kutudaki gibi olmalıdır.',
+      tree: treeLines('site', groups),
+      code: `mkdir -p site\n# Blok isimleri dizisi\nbloklar=(${bl.map(b => `"${b}"`).join(' ')})\n# Her bloktaki daire sayıları\ndaire_sayilari=(${cnt.join(' ')})\n\nfor i in "\${!bloklar[@]}"; do\n\n    blok={{0}}\n\n    sayi={{1}}\n\n    mkdir -p "site/{{2}}_Blok"\n\n    for ((d=1; d<={{3}}; d++)); do\n        touch "{{4}}"\n    done\ndone`,
+      blanks: [{ opts: ['"${bloklar[$i]}"', '"$bloklar[$i]"', '"${bloklar}"', '"${!bloklar[@]}"'], a: '"${bloklar[$i]}"' }, { opts: ['"${daire_sayilari[$i]}"', '"${daire_sayilari}"', '"$i"', '"${#daire_sayilari[@]}"'], a: '"${daire_sayilari[$i]}"' },
+        { opts: ['${blok}', '$blok', 'blok', '$i'], a: '${blok}' }, { opts: ['$sayi', '$i', '${#sayi}', '$d'], a: '$sayi' }, { opts: ['site/${blok}_Blok/daire$d.txt', 'site/$blok_Blok/daire$d.txt', 'site/${blok}_Blok/daire$i.txt', 'site/daire$d.txt'], a: 'site/${blok}_Blok/daire$d.txt' }],
+      followups: [{ q: `Betik çalıştıktan sonra ${C('find site -type f | wc -l')} çıktısı nedir?`, opts: [tot, tot + bl.length, tot + bl.length + 1, bl.length, tot - 1], a: tot },
+        { q: `${C(`ls site/${groups[gi].dir} | tail -n 1`)} çıktısı nedir?`, opts: [lastName, `daire${cnt[gi]}.txt`, 'daire1.txt', `daire${cnt[gi] - 1}.txt`], a: lastName }],
+      explain: `Dizi elemanı ${C('${dizi[$i]}')} ile alınır (${C('$dizi[$i]')} ilk elemanın sonuna "[0]" yapıştırır). ${C('"$blok_Blok"')} yazarsan shell ${C('blok_Blok')} adlı (tanımsız) değişkeni arar; ${C('${blok}_Blok')} şart. Toplam dosya ${cnt.join(' + ')} = <b>${tot}</b>. ${C('ls')} <b>alfabetik</b> sıralar: daire1, daire10, daire11, …, daire2 … bu yüzden son eleman <b>${lastName}</b>.`,
+    };
+  } else if (v === 1) { // ders/hafta
+    const ds = R.sample(['Sistem', 'Ag', 'Veritabani', 'Algoritma', 'Fizik', 'Matematik'], 3);
+    const hs = ds.map(() => R.int(8, 14));
+    const groups = ds.map((d, i) => ({ dir: d, items: Array.from({ length: hs[i] }, (_, k) => `hafta${k + 1}/`) }));
+    const tot = hs.reduce((a, b) => a + b, 0);
+    const g = groups[R.int(0, 2)];
+    const first3 = lsSorted(g.items.map(x => x.slice(0, -1))).slice(0, 3).join('\n');
+    q = {
+      prompt: 'Dönemdeki her ders için klasör, içine dersin hafta sayısı kadar hafta klasörü ve her hafta klasörüne notlar.txt dosyası oluşturan betikteki boşlukları doldurunuz.',
+      tree: treeLines('donem', groups, null, 'notlar.txt'),
+      code: `dersler=(${ds.map(d => `"${d}"`).join(' ')})\nhaftalar=(${hs.join(' ')})\n\nfor i in "\${!dersler[@]}"; do\n\n    ders={{0}}\n\n    n={{1}}\n    h=1\n\n    while [ $h {{2}} $n ]; do\n\n        mkdir -p "donem/$ders/{{3}}"\n        touch "donem/$ders/hafta$h/notlar.txt"\n\n        h={{4}}\n    done\ndone`,
+      blanks: [{ opts: ['"${dersler[$i]}"', '"$dersler"', '"${dersler[@]}"', '"$i"'], a: '"${dersler[$i]}"' }, { opts: ['"${haftalar[$i]}"', '"${#haftalar[@]}"', '"$haftalar"', '"${haftalar[$h]}"'], a: '"${haftalar[$i]}"' },
+        { opts: ['-le', '-lt', '-gt', '-eq'], a: '-le' }, { opts: ['hafta$h', 'hafta$n', 'hafta$i', '$hafta$h'], a: 'hafta$h' }, { opts: ['$((h+1))', '$h+1', 'h+1', '$((n+1))'], a: '$((h+1))' }],
+      followups: [{ q: `${C('find donem -name "notlar.txt" | wc -l')} çıktısı nedir?`, opts: [tot, tot + 3, tot * 2, 3, tot - 3], a: tot },
+        { q: `${C(`ls donem/${g.dir} | head -n 3`)} çıktısı nedir?`, opts: [first3, 'hafta1\nhafta2\nhafta3', 'hafta1/\nhafta2/\nhafta3/', lsSorted(g.items.map(x => x.slice(0, -1))).slice(-3).join('\n')], a: first3 }],
+      explain: `${C('-le')} son haftayı da dahil eder; ${C('-lt')} ile son hafta oluşmaz. ${C('mkdir -p')} ara klasörleri de oluşturur. ${C('h=$((h+1))')} olmazsa döngü bitmez. Toplam ${hs.join(' + ')} = <b>${tot}</b> notlar.txt. ${C('ls')} alfabetik sıralar: hafta1, hafta10, hafta11… (sayısal değil!).`,
+    };
+  } else if (v === 2) { // salon/sira
+    const sl = R.sample(['D101', 'D102', 'D201', 'D202', 'A105', 'B204'], 3).sort();
+    const kp = sl.map(() => R.int(12, 40));
+    const groups = sl.map((s, i) => ({ dir: s, items: Array.from({ length: kp[i] }, (_, k) => `sira${k + 1}.txt`) }));
+    const gi = R.int(0, 2), sn = R.int(2, Math.min(9, kp[gi]));
+    const last = lsSorted(groups[gi].items).slice(-1)[0];
+    q = {
+      prompt: 'Her sınav salonu için klasör, içine salon kapasitesi kadar sıra dosyası oluşturan ve her dosyanın içine "<salon> - Sira <no>" yazan betikteki boşlukları doldurunuz.',
+      tree: treeLines('sinav', groups) + `\n\nsira7.txt içeriği:\n"${sl[0]} - Sira 7"`,
+      code: `salonlar=(${sl.map(s => `"${s}"`).join(' ')})\nkapasite=(${kp.join(' ')})\n\n# Dizinin eleman sayısı kadar dön\nfor ((i=0; i<{{0}}; i++)); do\n\n    salon="\${salonlar[$i]}"\n\n    mkdir -p {{1}}\n\n    for ((s=1; s<={{2}}; s++)); do\n\n        echo {{3}} > "sinav/$salon/sira$s.txt"\n    done\ndone`,
+      blanks: [{ opts: ['${#salonlar[@]}', '${salonlar[@]}', '${!salonlar[@]}', '$salonlar'], a: '${#salonlar[@]}' }, { opts: ['"sinav/$salon"', '"sinav/salon"', '"sinav/$s"', '"$salon/sinav"'], a: '"sinav/$salon"' },
+        { opts: ['${kapasite[$i]}', '${#kapasite[@]}', '$kapasite', '${kapasite[$s]}'], a: '${kapasite[$i]}' }, { opts: ['"$salon - Sira $s"', '\'$salon - Sira $s\'', '"salon - Sira s"', '"$salon - Sira $i"'], a: '"$salon - Sira $s"' }],
+      followups: [{ q: `${C(`cat sinav/${sl[gi]}/sira${sn}.txt`)} çıktısı nedir?`, opts: [`${sl[gi]} - Sira ${sn}`, `$salon - Sira $s`, `${sl[gi]} - Sira ${gi}`, `sinav/${sl[gi]}/sira${sn}.txt`], a: `${sl[gi]} - Sira ${sn}` },
+        { q: `${C(`ls sinav/${sl[gi]} | tail -n 1`)} çıktısı nedir?`, opts: [last, `sira${kp[gi]}.txt`, 'sira1.txt', `sira${kp[gi] - 1}.txt`], a: last }],
+      explain: `${C('${#dizi[@]}')} eleman sayısı, ${C('${!dizi[@]}')} indeksler, ${C('${dizi[$i]}')} i. eleman. Tek tırnak değişkeni açmaz; dosyaya "$salon - Sira $s" yazılırdı. ${C('ls')} alfabetik sıralar → son dosya <b>${last}</b>.`,
+    };
+  } else if (v === 3) { // yıl/ay/gün
+    const yil = R.pick([2026, 2027, 2028]);
+    const all = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const dn = [31, yil % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const st = R.int(0, 8); const ay = all.slice(st, st + 3), gn = dn.slice(st, st + 3);
+    const groups = ay.map((a, i) => ({ dir: a, items: Array.from({ length: gn[i] }, (_, k) => `${k + 1}.gunluk`) }));
+    const tot = gn.reduce((a, b) => a + b, 0);
+    q = {
+      prompt: `${yil} yılının ${ay.join(', ')} ayları için klasör, her ay klasörünün içine ayın çektiği gün sayısı kadar günlük dosyası (1.gunluk, 2.gunluk …) oluşturan betikteki boşlukları doldurunuz. (Geçen yılın 12. sorusu tipi.)`,
+      tree: treeLines(String(yil), groups),
+      code: `mkdir -p ${yil}\n# Ay isimleri dizisi\naylar=(${ay.map(a => `"${a}"`).join(' ')})\n# Her ayın gün sayısı\ngun_sayilari=(${gn.join(' ')})\n\nfor i in "\${!aylar[@]}"; do\n\n    ay={{0}}\n\n    gun_sayisi={{1}}\n\n    mkdir -p "${yil}/{{2}}"\n\n    for ((gun=1; gun<=gun_sayisi; gun++)); do\n\n        dosya_adi="{{3}}"\n        touch "$dosya_adi"\n    done\ndone`,
+      blanks: [{ opts: ['"${aylar[$i]}"', '"$aylar[$i]"', '"${aylar[@]}"', '"$i"'], a: '"${aylar[$i]}"' }, { opts: ['"${gun_sayilari[$i]}"', '"${#gun_sayilari[@]}"', '"$gun_sayilari"', '"${gun_sayilari[$gun]}"'], a: '"${gun_sayilari[$i]}"' }, { opts: ['$ay', '$aylar', 'ay', '$i'], a: '$ay' }, { opts: [`${yil}/$ay/$gun.gunluk`, `${yil}/$ay/gun.gunluk`, `${yil}/$gun.gunluk`, `${yil}/$aylar/$gun.gunluk`], a: `${yil}/$ay/$gun.gunluk` }],
+      followups: [{ q: `${C(`find ${yil} -name "*.gunluk" | wc -l`)} çıktısı nedir?`, opts: [tot, tot + 3, 90, 3, tot - 1], a: tot },
+        { q: `${C(`ls ${yil}/${ay[0]} | head -n 3`)} çıktısı nedir?`, opts: [lsSorted(groups[0].items).slice(0, 3).join('\n'), '1.gunluk\n2.gunluk\n3.gunluk', `${gn[0] - 2}.gunluk\n${gn[0] - 1}.gunluk\n${gn[0]}.gunluk`, '1.gunluk\n10.gunluk\n2.gunluk'], a: lsSorted(groups[0].items).slice(0, 3).join('\n') }],
+      explain: `Hocanın geçen yılki cevabıyla aynı kalıp: ${C('ay="${aylar[$i]}"')}, ${C('gun_sayisi="${gun_sayilari[$i]}"')}, ${C('mkdir -p "' + yil + '/$ay"')}, ${C('"' + yil + '/$ay/$gun.gunluk"')}. ${C('(( ))')} içinde değişken ${C('$')} olmadan da yazılabilir. Toplam ${gn.join(' + ')} = <b>${tot}</b>. ${C('ls')} alfabetik sıralar: 1.gunluk, 10.gunluk, 11.gunluk…`,
+    };
+  } else { // depo/raf/kutu (while + echo >>)
+    const rf = R.sample(['R1', 'R2', 'R3', 'R4', 'R5'], 3).sort();
+    const kt = rf.map(() => R.int(3, 12));
+    const groups = rf.map((r, i) => ({ dir: r, items: Array.from({ length: kt[i] }, (_, k) => `kutu${k + 1}.txt`) }));
+    const tot = kt.reduce((a, b) => a + b, 0);
+    const gi = R.int(0, 2);
+    q = {
+      prompt: 'Depodaki her raf için klasör, içine raftaki kutu sayısı kadar kutu dosyası oluşturan ve her rafın kutu listesini depo/liste.txt dosyasının sonuna ekleyen betikteki boşlukları doldurunuz.',
+      tree: treeLines('depo', groups) + '\n  liste.txt',
+      code: `raflar=(${rf.map(r => `"${r}"`).join(' ')})\nkutular=(${kt.join(' ')})\n\nfor i in "\${!raflar[@]}"; do\n\n    raf="\${raflar[$i]}"\n    mkdir -p {{0}}\n    k=1\n\n    while [ $k -le {{1}} ]; do\n        touch "depo/$raf/kutu$k.txt"\n        echo "$raf kutu$k" {{2}} depo/liste.txt\n        k={{3}}\n    done\ndone`,
+      blanks: [{ opts: ['"depo/$raf"', '"depo/raf"', '"$raf/depo"', '"depo/$i"'], a: '"depo/$raf"' }, { opts: ['${kutular[$i]}', '${#kutular[@]}', '$kutular', '${kutular[$k]}'], a: '${kutular[$i]}' }, { opts: ['>>', '>', '<', '|'], a: '>>' }, { opts: ['$((k+1))', '$k+1', 'k+1', '$((i+1))'], a: '$((k+1))' }],
+      followups: [{ q: `${C('wc -l < depo/liste.txt')} çıktısı nedir?`, opts: [tot, 1, kt[kt.length - 1], tot + 3, 3], a: tot },
+        { q: `Betikte ${C('>>')} yerine ${C('>')} kullanılsaydı ${C('cat depo/liste.txt')} ne yazardı?`, opts: [`${rf[2]} kutu${kt[2]}`, `${rf[0]} kutu1`, '(boş çıktı)', `${tot} satırın hepsi`], a: `${rf[2]} kutu${kt[2]}` }],
+      explain: `${C('>>')} sona ekler; her echo yeni satır ekler → toplam ${kt.join(' + ')} = <b>${tot}</b> satır. ${C('>')} her seferinde dosyayı sıfırdan yazardı, sadece <b>son</b> satır kalırdı: "${rf[2]} kutu${kt[2]}".`,
+    };
+  }
+  q.topic = 'classic';
+  return finishBlanks(q);
+};
+
+/* ======================= KATALOG ======================= */
+const TOPICS = {
+  redir: 'Yönlendirme', last: 'last', chain: '; && ||', arith: 'Aritmetik & tırnak', recpar: '$0 & paralel', wild: 'Wildcard & regex',
+  csv: 'CSV & sort', regex: 'Regex', script: 'Script tamamla', top: 'top & pipe', passwd: '/etc/passwd', find: 'find', classic: 'Klasik 12. soru',
+};
+const PRACTICE = { redir: [G.redir], last: [G.last], chain: [G.chain], arith: [G.arith], recpar: [G.recpar], wild: [G.wild], csv: [G.csv], regex: [G.regex], script: [G.script], top: [G.topmulti, G.topfill], passwd: [G.passwd], find: [G.find], classic: [G.classic] };
+// Deneme sınavı: geçen yılın puan dağılımı (100)
+const EXAM = [
+  ['1', 4, G.redir, 'Yönlendirme'], ['2', 4, G.last, 'last'], ['3a', 4, G.chain, '; && || çıktısı'], ['3b', 4, G.arith, 'Aritmetik / tırnak çıktısı'], ['3c', 4, G.recpar, '$0 recursive / paralel çıktısı'], ['4', 4, () => R.chance(.5) ? G.last() : G.wild(), 'last ya da wildcard ↔ regex'],
+  ['5', 4, G.csv, 'CSV + sort'], ['6', 4, G.regex, 'Regex (çok doğrulu)'], ['7', 20, G.script, 'Script tamamlama'], ['8', 12, G.topfill, 'top + bc boşluk doldurma'], ['9', 8, G.passwd, '/etc/passwd (çok doğrulu)'], ['10', 4, G.find, 'find'], ['11', 8, G.topmulti, 'top pipe sırası (çok doğrulu)'], ['12', 16, G.classic, 'Klasik 12. soru'],
+];
+function safe(gen) { for (let i = 0; i < 40; i++) { try { return gen(); } catch (e) { if (i === 39) throw e; } } }
+function generate(topics) {
+  const t = R.pick(topics && topics.length ? topics : Object.keys(PRACTICE));
+  return safe(R.pick(PRACTICE[t]));
+}
+function generateExam() {
+  const used = new Set();
+  return EXAM.map(([no, pts, g]) => { const q = safe(g); q.no = no; q.points = pts; return q; });
+}
+
+const API = { R, run, norm, tokenize, splitPipe, toJsRegex, genTop, genLast, G, TOPICS, PRACTICE, EXAM, generate, generateExam, safe, esc, bcDiv, showOut };
+if (typeof module !== 'undefined') module.exports = API; else root.QuizEngine = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+'use strict';
+const E = window.QuizEngine, esc = E.esc, LET = 'ABCDEFG';
+const $ = (s, el) => (el || document).querySelector(s);
+const h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+
+/* ---------- kalıcı istatistik (sadece bu tarayıcı) ---------- */
+const KEY = 'kabuk-antrenmani-v1';
+let store = { stats: {}, streak: 0, best: 0, topics: [] };
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) store = Object.assign(store, s); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+
+/* ---------- terminal çıktısı: satır numarası + cetvel ---------- */
+function termBlock(c, showRuler) {
+  const lines = c.text.split('\n');
+  const isTop = c.title.includes('top -b');
+  const maxLen = Math.max(...lines.map(l => l.length));
+  let ruler = '';
+  if (isTop) {
+    let a = '', b = '';
+    for (let i = 1; i <= maxLen; i++) { a += i % 10 === 0 ? String(i / 10 % 10) : ' '; b += String(i % 10); }
+    ruler = `<tr class="ruler" data-r><td class="ln"></td><td class="tx">${esc(a)}</td></tr><tr class="ruler" data-r><td class="ln">kar.</td><td class="tx">${esc(b)}</td></tr>`;
+  }
+  const rows = lines.map((l, i) => `<tr><td class="ln">${i + 1}</td><td class="tx">${esc(l) || ' '}</td></tr>`).join('');
+  const el = h(`<div class="ctx"><div class="ctx-head"><span class="ctx-title">${esc(c.title)}</span>${isTop ? '<button class="linkbtn ruler-toggle" type="button"></button>' : ''}</div><div class="term"><table>${ruler}${rows}</table></div></div>`);
+  if (isTop) {
+    const btn = $('.ruler-toggle', el);
+    const set = on => { el.querySelectorAll('[data-r]').forEach(r => { r.hidden = !on; }); btn.textContent = on ? 'Karakter cetvelini gizle' : 'Karakter cetvelini göster'; btn.dataset.on = on ? '1' : ''; };
+    set(showRuler); btn.addEventListener('click', () => set(!btn.dataset.on));
+  }
+  return el;
+}
+
+/* ---------- puanlama ---------- */
+function grade(q) {
+  const u = q.user || {};
+  if (q.kind === 'single') { const ok = u.sel != null && q.options[u.sel].correct; return { ok, frac: ok ? 1 : 0, pts: ok ? q.points : 0 }; }
+  if (q.kind === 'multi') {
+    const sel = u.selm || new Set(); const total = q.options.filter(o => o.correct).length;
+    let hit = 0, wrong = 0; sel.forEach(i => { q.options[i].correct ? hit++ : wrong++; });
+    const ok = hit === total && wrong === 0;
+    const pts = Math.max(0, Math.round((q.points * hit / total - 2 * wrong) * 10) / 10);
+    return { ok, frac: ok ? 1 : hit / total, pts: ok ? q.points : pts, hit, wrong, total };
+  }
+  const items = q.blanks.length + q.followups.length;
+  let good = 0;
+  q.blanks.forEach((b, i) => { if ((u.blanks || [])[i] === b.a) good++; });
+  q.followups.forEach((f, i) => { if ((u.follow || [])[i] === f.a) good++; });
+  return { ok: good === items, frac: good / items, pts: Math.round(q.points * good / items * 10) / 10, good, items };
+}
+function answered(q) {
+  const u = q.user || {};
+  if (q.kind === 'single') return u.sel != null;
+  if (q.kind === 'multi') return u.selm && u.selm.size > 0;
+  return (u.blanks || []).filter(x => x != null).length === q.blanks.length && (u.follow || []).filter(x => x != null).length === q.followups.length;
+}
+function anyAnswer(q) {
+  const u = q.user || {};
+  return u.sel != null || (u.selm && u.selm.size) || (u.blanks || []).some(x => x != null) || (u.follow || []).some(x => x != null);
+}
+
+/* ---------- soru çizimi ---------- */
+function renderQuestion(q, opt) {
+  // opt: { reveal, onChange, label, ruler }
+  q.user = q.user || { sel: null, selm: new Set(), blanks: [], follow: [] };
+  const sheet = h('<article class="sheet"></article>');
+  const label = opt.label || '';
+  sheet.appendChild(h(`<div class="qmeta">${label ? `<span class="qno">${esc(label)}</span>` : ''}${q.points ? `<span class="pts">${q.points} puan</span>` : ''}<span class="tag">${esc(E.TOPICS[q.topic] || q.topic)}</span>${q.kind === 'multi' ? '<span class="tag">çok doğrulu · yanlış −2</span>' : ''}</div>`));
+  (q.context || []).forEach(c => sheet.appendChild(termBlock(c, opt.ruler)));
+  sheet.appendChild(h(`<div class="prompt">${q.prompt}</div>`));
+  const rv = !!opt.reveal;
+
+  if (q.kind === 'single' || q.kind === 'multi') {
+    const ul = h('<ul class="opts" role="list"></ul>');
+    q.options.forEach((o, i) => {
+      const isSel = q.kind === 'single' ? q.user.sel === i : q.user.selm.has(i);
+      const cls = ['opt', q.kind === 'multi' ? 'multi' : '', isSel ? 'sel' : '', rv ? 'locked' : '', rv && o.correct ? 'right' : '', rv && isSel && !o.correct ? 'wrongpick' : ''].join(' ');
+      const textEl = q.optKind === 'out' ? `<div class="outtext">${esc(o.text)}</div>` : `<div class="code">${esc(o.text)}</div>`;
+      let extra = '';
+      if (rv) {
+        const mark = o.correct ? (isSel ? '<span class="verdict-mini ok">doğru ✓</span>' : (q.kind === 'multi' ? '<span class="verdict-mini">bu da doğruydu</span>' : '<span class="verdict-mini">doğru cevap</span>')) : (isSel ? '<span class="verdict-mini">yanlış seçim</span>' : '');
+        let sim = '';
+        if (q.sim && o.out) {
+          const outTxt = o.out.length ? o.out.map(esc).join('\n') : '(boş çıktı)';
+          const errs = (o.errs || []).map(e => `<span class="errline">${esc(e)}</span>`).join('\n');
+          sim = `<details class="simout"><summary>Bu komut ne yazdırır?</summary><pre>${outTxt}${errs ? '\n' + errs : ''}</pre></details>`;
+        }
+        extra = mark + sim;
+      }
+      const li = h(`<li class="${cls}" ${rv ? '' : 'tabindex="0" role="' + (q.kind === 'multi' ? 'checkbox' : 'radio') + '" aria-checked="' + isSel + '"'}><span class="let">${LET[i]}</span><div class="body">${textEl}${extra}</div></li>`);
+      if (!rv) {
+        const pick = () => {
+          if (q.kind === 'single') q.user.sel = i; else { q.user.selm.has(i) ? q.user.selm.delete(i) : q.user.selm.add(i); }
+          opt.onChange && opt.onChange();
+        };
+        li.addEventListener('click', pick);
+        li.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); pick(); } });
+      }
+      ul.appendChild(li);
+    });
+    sheet.appendChild(ul);
+  } else {
+    let html = esc(q.code);
+    html = html.replace(/\{\{(\d+)\}\}/g, (_, k) => {
+      const b = q.blanks[+k]; const v = q.user.blanks[+k];
+      const st = rv ? (v === b.a ? ' ok' : ' no') : '';
+      const opts = ['<option value="">……………</option>'].concat(b.opts.map((o, j) => `<option value="${j}" ${v === j ? 'selected' : ''}>${esc(o)}</option>`)).join('');
+      const fix = rv && v !== b.a ? `<span class="fix">→ ${esc(b.opts[b.a])}</span>` : '';
+      return `<select class="blank${st}" data-b="${k}" aria-label="Boşluk ${+k + 1}" ${rv ? 'disabled' : ''}>${opts}</select>${fix}`;
+    });
+    const codeEl = h(`<div class="codebox">${html}</div>`);
+    if (q.tree) { const wrap = h(`<div class="classic"><div class="tree">${esc(q.tree)}</div></div>`); wrap.appendChild(codeEl); sheet.appendChild(wrap); }
+    else sheet.appendChild(codeEl);
+    codeEl.querySelectorAll('select.blank').forEach(s => s.addEventListener('change', () => { q.user.blanks[+s.dataset.b] = s.value === '' ? null : +s.value; opt.onChange && opt.onChange(); }));
+    q.followups.forEach((f, fi) => {
+      const box = h(`<div class="follow"><div class="follow-q">${f.q}</div><div class="fopts"></div></div>`);
+      const fo = $('.fopts', box);
+      f.opts.forEach((o, j) => {
+        const isSel = q.user.follow[fi] === j;
+        const b = h(`<button type="button" class="fopt ${isSel ? 'sel' : ''} ${rv && j === f.a ? 'right' : ''} ${rv && isSel && j !== f.a ? 'wrongpick' : ''}" ${rv ? 'disabled' : ''}>${esc(o)}</button>`);
+        if (!rv) b.addEventListener('click', () => { q.user.follow[fi] = j; opt.onChange && opt.onChange(); });
+        fo.appendChild(b);
+      });
+      sheet.appendChild(box);
+    });
+  }
+
+  if (rv) sheet.appendChild(feedback(q));
+  return sheet;
+}
+
+function feedback(q) {
+  const g = grade(q);
+  let verdict;
+  if (g.ok) verdict = `<div class="verdict ok">Doğru! ${q.points ? '+' + q.points + ' puan' : ''}</div>`;
+  else if (q.kind === 'multi' && g.hit) verdict = `<div class="verdict">${g.hit}/${g.total} doğru, ${g.wrong} yanlış işaret${q.points ? ' → ' + g.pts + ' puan' : ''}</div>`;
+  else if (q.kind === 'blanks' && g.good) verdict = `<div class="verdict">${g.good}/${g.items} doğru${q.points ? ' → ' + g.pts + ' puan' : ''}</div>`;
+  else verdict = `<div class="verdict">${anyAnswer(q) ? 'Yanlış' : 'Boş bırakıldı'}${q.points ? ' → 0 puan' : ''}</div>`;
+  const fb = h(`<div class="feedback">${verdict}<div class="explain">${q.explain || ''}</div></div>`);
+  if (q.sim) {
+    const c = q.options.find(o => o.correct && o.trace && o.trace.length > 1);
+    if (c) {
+      const tr = h(`<div class="trace"><div class="trace-title">Doğru komut adım adım (her | sonrası elinde kalan satırlar):</div></div>`);
+      c.trace.forEach((s, i) => {
+        const pv = s.out.length ? s.out.slice(0, 12).map(esc).join('\n') + (s.out.length > 12 ? `\n… (+${s.out.length - 12} satır)` : '') : '(boş)';
+        tr.appendChild(h(`<div class="stage"><span class="n">${i ? '| ' : ''}${s.out.length} satır</span><span class="c">${esc(s.cmd)}</span><pre>${pv}</pre></div>`));
+      });
+      fb.appendChild(tr);
+    }
+  }
+  return fb;
+}
+
+/* ======================= PRATİK ======================= */
+const topicKeys = Object.keys(E.TOPICS);
+let active = new Set((store.topics || []).filter(t => topicKeys.includes(t)));
+let cur = null, revealed = false;
+
+function renderChips() {
+  const box = $('#chips'); box.innerHTML = '';
+  topicKeys.forEach(t => {
+    const s = store.stats[t]; const pct = s && s.n ? Math.round(100 * s.ok / s.n) + '%' : '';
+    const b = h(`<button class="chip" type="button" aria-pressed="${active.has(t)}">${esc(E.TOPICS[t])}${pct ? `<span class="pct">${pct}</span>` : ''}</button>`);
+    b.addEventListener('click', () => { active.has(t) ? active.delete(t) : active.add(t); store.topics = [...active]; save(); renderChips(); newQuestion(); });
+    box.appendChild(b);
+  });
+  $('#chip-note').textContent = active.size ? `· ${active.size} seçili` : '· hepsi karışık';
+}
+function renderStats() {
+  let n = 0, ok = 0; Object.values(store.stats).forEach(s => { n += s.n; ok += s.ok; });
+  $('#stats').innerHTML = `<span>Çözülen <b>${n}</b></span><span>Doğru <b>${n ? Math.round(100 * ok / n) : 0}%</b></span><span>Seri <b>${store.streak}</b></span><span>En iyi seri <b>${store.best}</b></span>`;
+}
+function newQuestion() {
+  cur = E.generate([...active]); cur.user = null; revealed = false; drawPractice();
+  window.scrollTo({ top: Math.max(0, $('#pq').offsetTop - 80), behavior: 'smooth' });
+}
+function drawPractice() {
+  const host = $('#pq'); host.innerHTML = '';
+  const sheet = renderQuestion(cur, { reveal: revealed, onChange: drawPractice, ruler: true });
+  const act = h(`<div class="actions"></div>`);
+  if (!revealed) {
+    const b = h(`<button class="btn primary" type="button" id="check">Kontrol et</button>`);
+    b.disabled = !answered(cur);
+    b.addEventListener('click', check);
+    act.appendChild(b);
+    const s = h(`<button class="btn ghost" type="button">Bu soruyu geç</button>`); s.addEventListener('click', newQuestion); act.appendChild(s);
+    if (cur.kind === 'multi') act.appendChild(h('<span class="kbd">Birden fazla şık seçebilirsin.</span>'));
+  } else {
+    const b = h(`<button class="btn primary" type="button" id="next">Sonraki soru →</button>`); b.addEventListener('click', newQuestion); act.appendChild(b);
+  }
+  sheet.appendChild(act);
+  host.appendChild(sheet);
+}
+function check() {
+  if (!answered(cur)) return;
+  revealed = true;
+  const g = grade(cur); const s = store.stats[cur.topic] || (store.stats[cur.topic] = { n: 0, ok: 0 });
+  s.n++; if (g.ok) { s.ok++; store.streak++; store.best = Math.max(store.best, store.streak); } else store.streak = 0;
+  save(); renderStats(); renderChips(); drawPractice();
+  const fb = $('#pq .feedback'); if (fb) fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('#all-topics').addEventListener('click', () => { active.clear(); store.topics = []; save(); renderChips(); newQuestion(); });
+document.addEventListener('keydown', e => {
+  if (mode !== 'practice' || !cur || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Enter') { e.preventDefault(); revealed ? newQuestion() : check(); return; }
+  const k = parseInt(e.key, 10);
+  if (!revealed && k >= 1 && k <= 7 && (cur.kind === 'single' || cur.kind === 'multi') && cur.options[k - 1]) {
+    cur.user = cur.user || { sel: null, selm: new Set(), blanks: [], follow: [] };
+    if (cur.kind === 'single') cur.user.sel = k - 1; else { cur.user.selm.has(k - 1) ? cur.user.selm.delete(k - 1) : cur.user.selm.add(k - 1); }
+    drawPractice();
+  }
+});
+
+/* ======================= DENEME SINAVI ======================= */
+let exam = null; // { qs, i, done }
+function examIntro() {
+  const host = $('#ex'); host.innerHTML = '';
+  const rows = E.EXAM.map(([no, p, g, lab]) => `<tr><td>${no}</td><td>${esc(lab)}</td><td class="p">${p}</td></tr>`).join('');
+  const el = h(`<article class="sheet intro">
+    <h2>Deneme sınavı</h2>
+    <p>Geçen yılın Quiz I'iyle aynı puan dağılımında, her seferinde yeniden üretilen 100 puanlık bir sınav. Sorular arasında serbestçe gezebilirsin. Cevaplar ve açıklamalar sınavı bitirince açılır. Çok doğrulu sorularda her yanlış işaret −2 puandır. Önerilen süre 40 dakika.</p>
+    <div class="tablewrap"><table class="dist"><thead><tr><th>Soru</th><th>Konu</th><th style="text-align:right">Puan</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="actions"><button class="btn primary" type="button" id="start">Sınavı başlat</button><span class="kbd">${store.lastExam != null ? 'Son denemen: ' + store.lastExam + ' puan' : ''}</span></div>
+  </article>`);
+  $('#start', el).addEventListener('click', () => { exam = { qs: E.generateExam(), i: 0, done: false, t0: Date.now() }; drawExam(); });
+  host.appendChild(el);
+}
+function dotClass(q, i) {
+  if (exam.done) { const g = grade(q); return g.ok ? 'full' : g.pts > 0 ? 'part' : 'zero'; }
+  return (i === exam.i ? 'cur ' : '') + (anyAnswer(q) ? 'done' : '');
+}
+function drawExam() {
+  const host = $('#ex'); host.innerHTML = '';
+  const prog = h('<div class="progress"></div>');
+  exam.qs.forEach((q, i) => { const d = h(`<button type="button" class="dot ${dotClass(q, i)}">${esc(q.no)}</button>`); d.addEventListener('click', () => { exam.i = i; drawExam(); }); prog.appendChild(d); });
+  if (exam.done) {
+    const total = Math.round(exam.qs.reduce((a, q) => a + grade(q).pts, 0) * 10) / 10;
+    const mins = Math.round((exam.t1 - exam.t0) / 60000);
+    const note = total >= 85 ? 'Hazırsın!' : total >= 60 ? 'İyi, eksikleri kapat.' : 'Pipe ve cut/sort konularına dön.';
+    const res = h(`<article class="sheet result"><h2>Sonuç</h2><div class="score">${total}<small> / 100</small></div><div class="score-note">${note}</div><p class="kbd">${mins} dakikada bitirdin. Her sorunun cevabını görmek için aşağıdaki numaralara tıkla; yeşil tam puan, sarı kısmi puan, kırmızı sıfır.</p><div class="actions"><button class="btn primary" type="button" id="again">Yeni deneme sınavı</button></div></article>`);
+    $('#again', res).addEventListener('click', () => { exam = { qs: E.generateExam(), i: 0, done: false, t0: Date.now() }; drawExam(); });
+    host.appendChild(res);
+  }
+  host.appendChild(prog);
+  const q = exam.qs[exam.i];
+  const sheet = renderQuestion(q, { reveal: exam.done, label: q.no + '.', onChange: () => { const y = window.scrollY; drawExam(); window.scrollTo(0, y); }, ruler: false });
+  const act = h('<div class="actions"></div>');
+  const prev = h('<button class="btn ghost" type="button">← Önceki</button>'); prev.disabled = exam.i === 0; prev.addEventListener('click', () => { exam.i--; drawExam(); });
+  const next = h('<button class="btn" type="button">Sonraki →</button>'); next.disabled = exam.i === exam.qs.length - 1; next.addEventListener('click', () => { exam.i++; drawExam(); });
+  act.append(prev, next);
+  if (!exam.done) {
+    const left = exam.qs.filter(x => !anyAnswer(x)).length;
+    const fin = h(`<button class="btn primary" type="button">Sınavı bitir</button>`);
+    const warn = h(`<span class="kbd">${left ? left + ' soru boş' : 'Hepsi cevaplandı'}</span>`);
+    fin.addEventListener('click', () => {
+      if (left && !fin.dataset.sure) { fin.dataset.sure = '1'; fin.textContent = `${left} boş soru var, yine de bitir`; return; }
+      exam.done = true; exam.t1 = Date.now(); exam.i = 0;
+      store.lastExam = Math.round(exam.qs.reduce((a, q) => a + grade(q).pts, 0) * 10) / 10; save();
+      drawExam(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    act.append(fin, warn);
+  }
+  sheet.appendChild(act);
+  host.appendChild(sheet);
+}
+
+/* ======================= MOD ======================= */
+let mode = 'practice';
+function setMode(m) {
+  mode = m;
+  $('#m-practice').setAttribute('aria-pressed', m === 'practice'); $('#m-exam').setAttribute('aria-pressed', m === 'exam');
+  $('#practice').hidden = m !== 'practice'; $('#exam').hidden = m !== 'exam';
+  if (m === 'exam' && !exam) examIntro();
+  try { history.replaceState(null, '', m === 'exam' ? '#deneme' : '#pratik'); } catch (e) {}
+}
+$('#m-practice').addEventListener('click', () => setMode('practice'));
+$('#m-exam').addEventListener('click', () => setMode('exam'));
+window.addEventListener('hashchange', () => setMode(location.hash === '#deneme' ? 'exam' : 'practice'));
+
+renderChips(); renderStats();
+cur = E.generate([...active]); drawPractice();
+if (location.hash === '#deneme') setMode('exam');
+})();
+</script>
+
+</body>
+</html>
